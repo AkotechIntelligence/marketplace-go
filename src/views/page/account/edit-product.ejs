@@ -1,0 +1,516 @@
+<!--=====================================
+            ADPOST PART START
+=======================================-->
+<div class="pcoded-content">
+	<div class="pcoded-inner-content">
+		<div class="main-body">
+			<div class="page-wrapper">
+				<section class="card">
+					<div class="container">
+						<div class="row">
+							<div class="col-lg-12">
+								<div id="ejsDataProduct" data-name="<%=JSON.stringify(product)%>"></div>
+
+
+							</div>
+
+
+
+							<form class="adpost-form" onsubmit="saveEditProduct(event)" id="productServiceFormEdit">
+								<div class="adpost-card">
+									<div class="adpost-title mt-3">
+										<h3>Edit Product</h3>
+									</div>
+									<hr />
+									<div class="row mt-3">
+										<div class="col-lg-12">
+											<div class="form-group">
+
+
+												<label class="form-label"><span class="chg_ps">Product</span> Name</label>
+												<input type="text" name="name" required class="form-control" value="<%-product.name%>"
+													placeholder="Type your product title here">
+											</div>
+										</div>
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label"><span class="chg_ps">Product</span> description</label>
+												<textarea class="form-control" name="description" id="description"
+													placeholder="Describe your message"></textarea>
+											</div>
+										</div>
+
+
+
+										<!-- <div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label"><span class="chg_ps">Market Zone</label>
+												<select class="js-example-basic-single form-control custom-select" name="zoneUuid"
+													id="marketZone" required>
+													<option>Choose an option</option>
+													<%data.zones.forEach(data => { %>
+													<option value="<%=data.zoneUuid%>"><%=data.name%></option>
+													<% }); %>
+
+												</select>
+											</div>
+										</div> -->
+
+										<!-- <div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label"> Merchant Category</label>
+												<select class="js-example-basic-single form-control custom-select"
+													name="merchantShopCategoryUuid" id="merchantCategory" required>
+
+
+												</select>
+											</div>
+										</div> -->
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label"><span class="chg_ps">Merchant Shop</label>
+												<select class="js-example-basic-single form-control custom-select" name="merchantShopUuid"
+													id="merchantShopUuid" required>
+													<option>Choose an option</option>
+													<%data.merchantShops.forEach(data => { %>
+													<option value="<%=data.uuid%>" data-name="<%=data.zoneUuid%>" selected="<%data.uuid%>">
+														<%=data.shopName%>
+													</option>
+													<% }); %>
+
+												</select>
+											</div>
+										</div>
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label"><span class="chg_ps">Product Category</label>
+												<select class="js-example-basic-single form-control custom-select" name="categoryUuid"
+													id="productCategory" required>
+
+
+												</select>
+											</div>
+										</div>
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label"><span class="chg_ps">Product Sub Category</label>
+												<select class="js-example-basic-single form-control custom-select" name="subCategoryUuid"
+													id="productSubCategory" required>
+
+
+												</select>
+											</div>
+										</div>
+
+
+
+
+
+
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label"><span class="chg_ps">Product</span> image</label>
+												<label for="fileInput" id="dropArea" class="drop-area">
+													<p>Click to Upload</p>
+													<input type="file" id="fileInput" style="display: none;" multiple />
+
+													<div id="uploadContainer" class="uploadContainer">
+
+													</div>
+
+												</label>
+											</div>
+										</div>
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label">Price</label>
+												<input type="number" name="price" id="price" class="form-control"
+													placeholder="Enter your pricing amount" required>
+											</div>
+										</div>
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label">Quantity</label>
+												<input type="number" id="quantity" name="quantity" class="form-control"
+													placeholder="Enter your quantity in stock" required>
+											</div>
+										</div>
+
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label class="form-label">Slug</label>
+												<input type="text" name="slug" id="slug" class="form-control" placeholder="Enter slug name">
+											</div>
+										</div>
+
+
+
+
+									</div>
+
+
+
+									<div id="resultSavingAd"></div>
+									<button type="submit" class="btn btn-primary mb-4 mt-1">
+										Save <span class="chg_ps">Product</span>
+									</button>
+
+								</div>
+							</form>
+						</div>
+
+					</div>
+			</div>
+			</section>
+		</div>
+	</div>
+	<!-- Warning Section Starts -->
+</div>
+</div>
+<!--=====================================
+            ADPOST PART END
+=======================================-->
+<script type="text/javascript" src="/admin/vendor/jquery/js/jquery.min.js"></script>
+
+
+
+<script>
+	async function getMerchantShopByZoneId(zoneUUid) {
+		fetch(`/api/merchantshopcategory/zone/${zoneUUid}`, {
+				method: 'GET',
+			})
+			.then(response => response.json())
+			.then(data => {
+
+				console.log("data", data)
+				const secondSelect = document.getElementById('merchantCategory');
+				secondSelect.innerHTML = '<option value="">Select an option</option>';
+
+				// Populate the second select with new options
+				data.data.forEach(item => {
+					const option = document.createElement('option');
+					option.value = item.uuid;
+					option.textContent = item.name;
+					secondSelect.appendChild(option);
+				});
+			})
+			.catch((error) => {
+				console.error('Error:', error)
+
+
+				iziToast.error({
+					title: 'Error',
+					message: error,
+					position: 'bottomRight' // You can adjust the position as needed
+				});
+			});
+	}
+
+	async function getProductCategoryZoneId(zoneUUid) {
+
+		fetch(`/api/productcategory/zone/${zoneUUid}`, {
+				method: 'GET',
+			})
+			.then(response => response.json())
+			.then(data => {
+
+				console.log("data", data)
+				const secondSelect = document.getElementById('productCategory');
+				secondSelect.innerHTML = '<option value="">Select an option</option>';
+
+				// Populate the second select with new options
+				data.data.forEach(item => {
+					const option = document.createElement('option');
+					option.value = item.uuid;
+					option.textContent = item.name;
+					secondSelect.appendChild(option);
+				});
+			})
+			.catch((error) => {
+				console.error('Error:', error)
+
+
+				iziToast.error({
+					title: 'Error',
+					message: error,
+					position: 'bottomRight' // You can adjust the position as needed
+				});
+			});
+	}
+
+
+	async function getProductSubCategoryByProductId(productCategoryId) {
+		fetch(`/api/productsubcategory/product/${productCategoryId}`, {
+				method: 'GET',
+			})
+			.then(response => response.json())
+			.then(data => {
+
+				console.log("data@sub", data)
+				const secondSelect = document.getElementById('productSubCategory');
+				secondSelect.innerHTML = '<option value="">Select an option</option>';
+
+				// Populate the second select with new options
+				data.data.forEach(item => {
+					const option = document.createElement('option');
+					option.value = item.uuid;
+					option.textContent = item.name;
+					secondSelect.appendChild(option);
+				});
+			})
+			.catch((error) => {
+				console.error('Error:', error)
+
+
+				iziToast.error({
+					title: 'Error',
+					message: error,
+					position: 'bottomRight' // You can adjust the position as needed
+				});
+			});
+	}
+
+
+
+	$(document).ready(function () {
+
+		const productFetch = $('#ejsDataProduct').data('name');
+		console.log("productFetch", productFetch)
+
+		const files = productFetch.productFiles
+
+		const imagesContainer = $('#uploadContainer');
+		// $("#marketZone").val(productFetch.zoneUuid)
+		$("#description").val(productFetch.description)
+		$("#price").val(productFetch.price)
+		$("#quantity").val(productFetch.quantity)
+		$("#slug").val(productFetch.slug)
+
+		for (let i = 0; i < files.length; i++) {
+			const imageSrc = '/uploads/' + files[i].imageUrl
+			const newImage = $('<div class="uploadedImage"></div>');
+			const imageElement = $('<img>');
+			const removeButton = $('<button class="removeImage">Remove</button>');
+
+			imageElement.attr('src', imageSrc);
+			imageElement.css('width', '100px')
+			newImage.append(imageElement);
+			newImage.append(removeButton);
+
+			console.log("files[i]", files[i])
+
+			imagesContainer.append(newImage);
+
+			removeButton.click(function (event) {
+				event.preventDefault();
+				fetch(`/api/productimage/${files[i].id}`, {
+						method: 'DELETE',
+					})
+					.then(response => response.json())
+					.then(data => {
+						console.log("data deleting image>>", data)
+					})
+					.catch((error) => {
+						console.log("error", error)
+						alert("error whilst deleting image")
+					});
+				newImage.remove();
+			});
+
+		}
+
+
+		setTimeout(async () => {
+
+			// const data = await Promise.all([getMerchantShopByZoneId(productFetch.zoneUuid), getProductCategoryZoneId(
+			// 	productFetch
+			// 	.zoneUuid)]).then((
+			// 	data) => {
+			// 	console.log("dataa", data)
+			// })
+
+
+			const data = await Promise.all([getProductCategoryZoneId(
+				productFetch.merchantShop
+				.zoneUuid)]).then((
+				data) => {
+				console.log("dataa", data)
+			})
+
+
+		}, 500)
+
+		new Promise((resolve, rejext) => {
+			setTimeout(() => {
+				$("#merchantCategory").val(productFetch.merchantShopCategoryUuid)
+				$("#productCategory").val(productFetch.productCategory.uuid)
+				Promise.all([getProductSubCategoryByProductId(productFetch.productCategory.uuid)])
+
+			}, 1000);
+
+		})
+
+		new Promise((resolve, rejext) => {
+			setTimeout(() => {
+				$("#productSubCategory").val(productFetch.productSubCategory.uuid)
+
+			}, 2000)
+		})
+
+
+		// $("#marketZone").change(() => {
+		// 	const zoneUUid = $('#marketZone option:selected').val();
+
+		// 	Promise.allSettled([getMerchantShopByZoneId(zoneUUid), getProductCategoryZoneId(zoneUUid)]).then((
+		// 		data) => {
+		// 		console.log("")
+		// 	})
+
+		// })
+
+		$("#merchantShopUuid").change(() => {
+			//	const zoneUUid = $('#merchantShopUuid option:selected').val();
+			//	const productFetch = $('#merchantShopUuid').data('name');
+
+
+			const zoneUUid = $('#merchantShopUuid option:selected').data('name');
+			//alert("zoneUUid", zoneUUid)
+			console.log("zoneUUid", zoneUUid)
+
+			Promise.allSettled([getProductCategoryZoneId(zoneUUid)]).then((
+				data) => {
+				console.log("")
+			})
+
+		})
+
+		$("#productCategory").change(() => {
+			const productCategoryId = $('#productCategory option:selected').val();
+			Promise.all([getProductSubCategoryByProductId(productCategoryId)])
+
+		})
+
+		$('#fileInput').change(function (event) {
+			//const file = this.files[0];
+			event.preventDefault();
+			const files = this.files;
+			const imagesContainer = $('#uploadContainer');
+
+
+			for (let i = 0; i < files.length; i++) {
+				const file = files[i];
+				const reader = new FileReader();
+				reader.onload = function () {
+					const imageSrc = reader.result;
+					const newImage = $('<div class="uploadedImage"></div>');
+					const imageElement = $('<img>');
+					const removeButton = $('<button class="removeImage">Remove</button>');
+
+					imageElement.attr('src', imageSrc);
+					imageElement.css('width', '100px')
+					newImage.append(imageElement);
+					newImage.append(removeButton);
+
+
+					imagesContainer.append(newImage);
+
+					removeButton.click(function (event) {
+						event.preventDefault();
+						newImage.remove();
+					});
+				}
+				reader.readAsDataURL(file);
+			}
+		});
+
+
+
+
+
+	});
+
+
+	function saveEditProduct(e) {
+		const productFetch = $('#ejsDataProduct').data('name');
+
+
+		e.preventDefault()
+		var data = [];
+
+		console.log("got here>>")
+		var form = document.getElementById("productServiceFormEdit")
+		console.log("form", form)
+
+		const files = [];
+		const fileInputs = $('#fileInput')[0].files;
+		console.log("fileInputs", fileInputs)
+
+		for (let i = 0; i < fileInputs.length; i++) {
+			files.push(fileInputs[i]);
+		}
+		// Initialize FormData object
+		var formData = new FormData(form);
+		for (let i = 0; i < files.length; i++) {
+			formData.append('files', files[i]);
+		}
+
+		fetch(`/api/product/edit/${productFetch.uuid}`, {
+				method: 'PUT',
+				body: formData
+			})
+			.then(response => response.json())
+			.then(data => {
+				console.log('Success:', data);
+				if (data.status == "success") {
+
+
+
+					iziToast.success({
+						title: 'Success',
+						message: data.message,
+						position: 'bottomRight' // You can adjust the position as needed
+					});
+
+					setTimeout(function () {
+						window.location.href = `/account/products`;
+					}, 800)
+
+
+				} else {
+
+
+					iziToast.error({
+						title: 'Error',
+						message: data.message,
+						position: 'bottomRight' // You can adjust the position as needed
+					});
+
+
+
+				}
+			})
+			.catch((error) => {
+				console.error('Error:', error)
+				// $("#result").html(`<div class="account-form" id="alertSaved"><div class="alert alert-danger alert-dismissible fade show" role="alert">
+				// 		<strong>${error}</strong>
+				// 		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				// 	</div></div>`)
+
+				iziToast.error({
+					title: 'Error',
+					message: error,
+					position: 'bottomRight' // You can adjust the position as needed
+				});
+			});
+
+
+	}
+
+</script>

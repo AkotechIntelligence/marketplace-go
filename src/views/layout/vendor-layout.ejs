@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<%- include('_partials/_head_admin.ejs'); %>
+</head>
+<body>
+	<!-- Pre-loader start -->
+	<div class="theme-loader">
+		<div class="ball-scale">
+			<div></div>
+		</div>
+	</div>
+	<!-- Pre-loader end -->
+
+
+
+	<div id="pcoded" class="pcoded">
+		<div class="pcoded-overlay-box"></div>
+		<div class="pcoded-container navbar-wrapper">
+			<header>
+				<%- include('_partials/_header_admin.ejs'); %>
+			</header>
+			<div class="pcoded-main-container">
+				<div class="pcoded-wrapper">
+					<%- include('_partials/_sidebar_admin.ejs'); %>
+					<main>
+						<%- body %>
+					</main>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<script type="text/javascript" src="/admin/vendor/jquery/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/admin/vendor/jquery-ui/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="/admin/vendor/popper.js/js/popper.min.js"></script>
+	<script type="text/javascript" src="/admin/vendor/bootstrap/js/bootstrap.min.js"></script>
+	<!-- jquery slimscroll js -->
+	<script type="text/javascript" src="/admin/vendor/jquery-slimscroll/js/jquery.slimscroll.js"></script>
+	<!-- modernizr js -->
+	<script type="text/javascript" src="/admin/vendor/modernizr/js/modernizr.js"></script>
+	<script type="text/javascript" src="/admin/vendor/modernizr/js/css-scrollbars.js"></script>
+	<!-- classie js -->
+	<script type="text/javascript" src="/admin/vendor/classie/js/classie.js"></script>
+	<!-- c3 chart js -->
+	<script src="/admin/vendor/d3/js/d3.min.js"></script>
+	<script src="/admin/vendor/c3/js/c3.js"></script>
+	<!-- google chart -->
+	<script type="text/javascript" src="/admin/js/charts/loader.js"></script>
+	<!-- echart js -->
+	<script src="/admin/pages/chart/echarts/js/echarts-all.js" type="text/javascript"></script>
+	<!-- data-table js -->
+	<script src="/admin/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
+	<script src="/admin/vendor/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+	<script src="/admin/pages/data-table/js/jszip.min.js"></script>
+	<script src="/admin/pages/data-table/js/pdfmake.min.js"></script>
+	<script src="/admin/pages/data-table/js/vfs_fonts.js"></script>
+	<script src="/admin/pages/data-table/extensions/responsive/js/dataTables.responsive.min.js"></script>
+	<script src="/admin/vendor/datatables.net-buttons/js/buttons.print.min.js"></script>
+	<script src="/admin/vendor/datatables.net-buttons/js/buttons.html5.min.js"></script>
+	<script src="/admin/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+	<script src="/admin/vendor/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+	<!-- i18next.min.js -->
+	<script type="text/javascript" src="/admin/vendor/i18next/js/i18next.min.js"></script>
+	<script type="text/javascript" src="/admin/vendor/i18next-xhr-backend/js/i18nextXHRBackend.min.js"></script>
+	<script type="text/javascript"
+		src="/admin/vendor/i18next-browser-languagedetector/js/i18nextBrowserLanguageDetector.min.js"></script>
+	<script type="text/javascript" src="/admin/vendor/jquery-i18next/js/jquery-i18next.min.js"></script>
+	<!-- Custom js -->
+	<script type="text/javascript" src="/admin/pages/dashboard/ecommerce-dashboard.js"></script>
+	<script type="text/javascript" src="/admin/js/script.js"></script>
+	<script src="/admin/js/pcoded.min.js"></script>
+	<script src="/admin/js/demo-12.js"></script>
+	<script src="/admin/js/jquery.mCustomScrollbar.concat.min.js"></script>
+	<script src="/admin/js/jquery.mousewheel.min.js"></script>
+	<script type="text/javascript" src="/assets/js/iziToast.min.js"></script>
+	<script src="/assets/js/select2.min.js"></script>
+</body>
+</html>

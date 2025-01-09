@@ -1,0 +1,170 @@
+<style>
+	.swiper-container {
+		width: 100%;
+		height: 400px;
+		position: relative;
+	}
+
+	.swiper-slide {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.slide-image {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-size: cover;
+		background-position: center;
+		z-index: 1;
+		/* Ensure it's behind the content */
+	}
+
+	.slide-content {
+		position: relative;
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding: 20px;
+		z-index: 2;
+		/* Ensure it's above the background image */
+		color: #fff;
+	}
+
+	.text-content {
+		flex: 1;
+		max-width: 50%;
+		padding-right: 20px;
+	}
+
+	.text-content h3,
+	.text-content p {
+		margin: 0;
+		color: #fff;
+	}
+
+	.image-content {
+		flex: 1;
+		display: flex;
+		justify-content: flex-end;
+		/* Push the image to the right */
+	}
+
+	.image-content img {
+		max-width: 100%;
+		height: auto;
+	}
+
+</style>
+<main class="main">
+
+	<div class="intro-section">
+		<div class="swiper-container">
+			<div class="swiper-wrapper">
+				<div class="swiper-slide">
+					<div class="slide-image" style="background-image: url('/assets/images/demos/demo2/slides/slide-2.jpg');">
+					</div>
+					<div class="slide-content">
+						<div class="text-content">
+							<h3>Natural Sound</h3>
+							<p>Sale up to <span class="text-primary">30% Off</span></p>
+							<p>Free returns extended to 30 days after delivery</p>
+							<a href="shop-banner-sidebar.html" class="btn btn-dark btn-outline btn-rounded btn-icon-right">
+								Shop Now<i class="w-icon-long-arrow-right"></i>
+							</a>
+						</div>
+						<div class="image-content" data-animation-options="{
+							'name': 'fadeInDownShorter', 'duration': '1s'
+					}" data-options="{'relativeInput':true,'clipRelativeInput':true,'invertX':true,'invertY':true}"
+							data-child-depth="0.2">
+							<img src="/assets/images/demos/demo2/slides/woman.png" alt="Ski" width="865" height="732" />
+						</div>
+					</div>
+				</div>
+				<!-- Add more slides as needed -->
+			</div>
+			<!-- Add Pagination -->
+			<div class="swiper-pagination"></div>
+			<!-- Add Navigation -->
+			<div class="swiper-button-next"></div>
+			<div class="swiper-button-prev"></div>
+		</div>
+
+
+
+	</div>
+	<!-- End of .intro-section -->
+
+	<div class="container">
+		<div class=" appear-animate icon-box-wrapper br-sm mt-6 mb-6">
+			<div class="swiper-wrapper row cols-md-4 cols-sm-3 cols-1">
+				<div class="swiper-slide icon-box icon-box-side icon-box-primary">
+					<span class="icon-box-icon icon-shipping">
+						<i class="w-icon-truck"></i>
+					</span>
+					<div class="icon-box-content">
+						<h4 class="icon-box-title font-weight-bold mb-1">Free Shipping & Returns</h4>
+						<p class="text-default">For all orders over GHS 500 </p>
+					</div>
+				</div>
+				<div class="swiper-slide icon-box icon-box-side icon-box-primary">
+					<span class="icon-box-icon icon-payment">
+						<i class="w-icon-bag"></i>
+					</span>
+					<div class="icon-box-content">
+						<h4 class="icon-box-title font-weight-bold mb-1">Secure Payment</h4>
+						<p class="text-default">We ensure secure payment</p>
+					</div>
+				</div>
+				<div class="swiper-slide icon-box icon-box-side icon-box-primary icon-box-money">
+					<span class="icon-box-icon icon-money">
+						<i class="w-icon-money"></i>
+					</span>
+					<div class="icon-box-content">
+						<h4 class="icon-box-title font-weight-bold mb-1">Money Back Guarantee</h4>
+						<p class="text-default">Any back within 30 days</p>
+					</div>
+				</div>
+				<div class="swiper-slide icon-box icon-box-side icon-box-primary icon-box-chat">
+					<span class="icon-box-icon icon-chat">
+						<i class="w-icon-chat"></i>
+					</span>
+					<div class="icon-box-content">
+						<h4 class="icon-box-title font-weight-bold mb-1">Customer Support</h4>
+						<p class="text-default">Call or email us 24/7</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End of Iocn Box Wrapper -->
+
+
+	</div>
+
+</main>
+<script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
+<script>
+	var swiper = new Swiper('.swiper-container', {
+		slidesPerView: 1,
+		autoplay: {
+			delay: 4000,
+			disableOnInteraction: false
+		},
+		navigation: {
+			nextEl: '.swiper-button-next',
+			prevEl: '.swiper-button-prev',
+		},
+		pagination: {
+			el: '.swiper-pagination',
+			clickable: true,
+		},
+	});
+
+</script>
+
+
+<!-- <script src="/assets/js/main.min.js"></script> -->

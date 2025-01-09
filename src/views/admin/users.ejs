@@ -1,0 +1,103 @@
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="page-header">
+                    <div class="page-header-title">
+                        <h4>
+                            Users
+                        </h4>
+                        <span>
+                            List of all users
+                        </span>
+                    </div>
+                    <div class="page-header-breadcrumb">
+                        <% if (messages.error) { %>
+                            <div class="alert alert-danger icons-alert mb-4 mb-4" role="alert">
+                                <%= messages.error %>
+                            </div>
+                        <%} %>
+                        <% if (messages.success) { %>
+                            <div class="alert alert-success icons-alert mb-4" role="alert">
+                                <p><strong><%= messages.success %>!</strong></p>
+                            </div>
+                        <%} %>
+                    </div>
+                </div>
+                <div class="page-body">
+                    <div class="card">
+                        <div class="card-block">
+                            <div class="dt-responsive table-responsive">
+                                <table id="simpletable" class="table table-striped table-bordered nowrap">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Country</th>
+                                        <th>Email</th>
+                                        <th>Phone Number</th>
+                                        <th>Gender</th>
+                                        <th>Account Type</th>
+                                        <th>Verified</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <% if (users.length > 0) { %>
+                                        <% users.forEach(function(user) { %>
+                                            <tr>
+                                                <td>
+                                                    <img class="product-img" src="<%- user?.imageUrl ? (user.imageUrl.startsWith('http') ? user.imageUrl : '/uploads/' + user.imageUrl) : '/images/user.png' %>"
+                                                         alt="Avatar" />
+                                                    <%= user.firstName %> <%= user.lastName %>
+                                                </td>
+                                                <td><%= user.country %></td>
+                                                <td><%= user.email %></td>
+                                                <td><%= user.phoneNumber %></td>
+                                                <td><%= user.gender %></td>
+                                                <td><%= user.accountType %></td>
+                                                <td>
+                                                    <% if (user.verified) { %>
+                                                        <span class="badge badge-success">Verified</span>
+                                                    <% } else { %>
+                                                        <span class="badge badge-danger">Not Verified</span>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= user?.createdAt.toDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                                                <td>
+                                                    <a href="/admin/delete-user/<%=user.uuid%>" class="btn btn-danger btn-sm">Delete</a>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="9">
+                                                <p class="text-center">No user found</p>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Warning Section Starts -->
+    </div>
+</div>
+<script src="/admin/vendor/jquery/js/jquery.min.js"></script>
+<script src="/admin/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
+
+<script>
+	// DataTable
+	$(document).ready(function() {
+		$('#simpletable').DataTable({
+			"responsive": true,
+			"autoWidth": false,
+		});
+	});
+</script>
+

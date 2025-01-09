@@ -1,0 +1,99 @@
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="page-header">
+                    <div class="page-header-title">
+                        <h4>
+                            Transaction List
+                        </h4>
+                        <span>
+                            All transactions made by users
+                        </span>
+                    </div>
+                </div>
+                <div class="page-body">
+                    <div class="card">
+                        <div class="card-block">
+                            <div class="dt-responsive table-responsive">
+                                <table id="simpletable" class="table table-striped table-bordered nowrap">
+                                    <thead>
+                                    <tr>
+                                        <th>InvoiceNumber</th>
+                                        <th>Seller</th>
+                                        <th>Buyer</th>
+                                        <th>Purchase Amount (Currency)</th>
+                                        <th>Total Amount (Currency)</th>
+                                        <th>Payment Status</th>
+                                        <th>Product</th>
+                                        <th>Commission</th>
+                                        <th>Delivery Fee</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <% if (transactions.length > 0) { %>
+                                        <% transactions.forEach(function(transaction) { %>
+                                            <tr>
+                                                <td><%= transaction.invoiceNumber %></td>
+                                                <td>
+                                                    <img class="product-img" src="<%- transaction.seller?.imageUrl ? (transaction.seller.imageUrl.startsWith('http') ? transaction.seller.imageUrl : '/uploads/' + transaction.seller.imageUrl) : '/images/user.png' %>"
+                                                         alt="Avatar" />
+                                                    <%= transaction?.seller?.profile?.firstName %>   <%= transaction?.seller?.profile?.lastName %>
+                                                </td>
+                                                <td>
+                                                    <img class="product-img" src="<%- transaction.buyer?.imageUrl ? (transaction.buyer.imageUrl.startsWith('http') ? transaction.buyer.imageUrl : '/uploads/' + transaction.buyer.imageUrl) : '/images/user.png' %>"
+                                                         alt="Avatar" />
+                                                    <%= transaction?.buyer?.firstName %> <%= transaction?.buyer?.lastName %>
+                                                </td>
+                                                <td><%= transaction.currency%> <%= transaction.purchaseAmount %></td>
+                                                <td><%= transaction.currency%> <%= transaction.totalAmount %></td>
+                                                <td><%= transaction.paymentStatus %></td>
+                                                <td><%= transaction?.product?.name %></td>
+                                                <td><%= transaction?.commission %></td>
+                                                <td><%= transaction?.deliveryFee %></td>
+                                                <td><%=
+                                                        transaction?.createdAt.toDateString('en-US', {
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                    %></td>
+                                                <td>
+                                                    <a href="#" class="btn btn-danger btn-sm">Delete</a>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="7">
+                                                <p class="text-center">No transaction found</p>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Warning Section Starts -->
+    </div>
+</div>
+<script src="/admin/vendor/jquery/js/jquery.min.js"></script>
+<script src="/admin/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
+
+<script>
+	// DataTable
+	$(document).ready(function() {
+		$('#simpletable').DataTable({
+			"responsive": true,
+			"autoWidth": false,
+		});
+	});
+</script>
+

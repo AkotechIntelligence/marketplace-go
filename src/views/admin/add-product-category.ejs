@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Add Merchant</title>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+</head>
+
+<body>
+	<div class="pcoded-content">
+		<div class="pcoded-inner-content">
+			<div class="main-body">
+				<div class="page-wrapper">
+					<div class="page-header">
+						<div class="page-header-title">
+							<h4>Add Product Category</h4>
+						</div>
+					</div>
+					<div class="page-body">
+						<form class="" onsubmit="saveProductCategory(event)" id="formMerchant">
+
+							<div class="card">
+								<div class="card-block">
+
+									<!--  Start-->
+
+
+									<div class="page-header">
+										<div class="page-header-title">
+											<h4>Product Category</h4>
+										</div>
+									</div>
+
+									<div class="col-lg-12">
+										<div class="form-group">
+											<label class="form-label"> Product Category Name</label>
+											<input type="text" name="name" id="name" required class="form-control" placeholder="">
+										</div>
+									</div>
+
+									<div class="col-lg-12">
+										<div class="form-group">
+											<label class="form-label"><span class="chg_ps">Market Zone</label>
+											<select class="js-example-basic-single form-control custom-select" name="zoneUuid" id="marketZone"
+												required>
+												<option>Choose an option</option>
+												<%data.zones.forEach(data => { %>
+												<option value="<%=data.zoneUuid%>"><%=data.name%></option>
+												<% }); %>
+
+											</select>
+										</div>
+									</div>
+
+									<div class="col-lg-12">
+										<div class="form-group">
+											<label class="form-label"><span class="chg_ps">Choose Merchant Shop Category</label>
+											<select class="js-example-basic-single form-control custom-select" name="merchantShopCategoryUuid"
+												id="merchantCategory" required>
+											</select>
+										</div>
+									</div>
+
+
+									<!-- End -->
+									<div class="container">
+										<button type="submit" class="btn btn-primary col-md-3 mb-4 mt-1">
+											Save
+										</button>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="/admin/vendor/jquery/js/jquery.min.js"></script>
+
+	<script>
+		async function getMerchantShopByZoneId(zoneUUid) {
+			fetch(`/api/merchantshopcategory/zone/${zoneUUid}`, {
+					method: 'GET',
+				})
+				.then(response => response.json())
+				.then(data => {
+
+					console.log("data", data)
+					const secondSelect = document.getElementById('merchantCategory');
+					secondSelect.innerHTML = '<option value="">Select an option</option>';
+
+					// Populate the second select with new options
+					data.data.forEach(item => {
+						const option = document.createElement('option');
+						option.value = item.uuid;
+						option.textContent = item.name;
+						secondSelect.appendChild(option);
+					});
+				})
+				.catch((error) => {
+					console.error('Error:', error)
+
+
+					iziToast.error({
+						title: 'Error',
+						message: error,
+						position: 'bottomRight' // You can adjust the position as needed
+					});
+				});
+		}
+
+		$(document).ready(function () {
+
+			$("#marketZone").change(() => {
+				const zoneUUid = $('#marketZone option:selected').val();
+
+				Promise.allSettled([getMerchantShopByZoneId(zoneUUid)]).then((
+					data) => {
+					console.log("")
+				})
+
+			})
+
+		})
+
+		function saveProductCategory(e) {
+			e.preventDefault();
+
+			var form = document.getElementById("formMerchant");
+			const formData = new FormData(form);
+
+			const zone = $("#marketZone").val()
+			const merchantShopCat = $("#merchantCategory").val()
+			console.log("zone", zone, "merchantShopCat", merchantShopCat)
+
+			fetch('/api/product-category', {
+					method: 'POST',
+					body: formData
+
+				})
+				.then(response => response.json())
+				.then(data => {
+					console.log("data", data);
+					console.log('Success:', data);
+					if (data.status == "success") {
+						$("#formMerchant")[0].reset();
+						$("#input-container").html('')
+						$('#uploadContainer').html('')
+
+						iziToast.success({
+							title: 'Success',
+							message: data.message,
+							position: 'bottomRight'
+						});
+					} else {
+						iziToast.error({
+							title: 'Error',
+							message: data.message,
+							position: 'bottomRight'
+						});
+					}
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+					iziToast.error({
+						title: 'Error',
+						message: error,
+						position: 'bottomRight'
+					});
+				});
+		}
+
+	</script>
+</body>
+
+</html>

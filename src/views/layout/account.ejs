@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<%- include('_partials/_head.ejs'); %>
+</head>
+<body>
+	<header>
+		<%- include('_partials/_header_auth.ejs'); %>
+	</header>
+
+	<main>
+		<div class="container">
+			<div class="tab tab-vertical row gutter-lg">
+				<%- include('_partials/_account_sidebar.ejs'); %>
+				<div class="tab-content mb-6">
+					<%- body %>
+				</div>
+
+			</div>
+		</div>
+	</main>
+
+	<footer>
+		<%- include('_partials/_footer.ejs'); %>
+	</footer>
+
+	<script src="/assets/vendor/jquery/jquery.min.js"></script>
+	<script src="/assets/vendor/jquery.plugin/jquery.plugin.min.js"></script>
+	<script src="/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+	<script src="/assets/vendor/zoom/jquery.zoom.js"></script>
+	<script src="/assets/vendor/jquery.countdown/jquery.countdown.min.js"></script>
+	<script src="/assets/vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
+	<script src="/assets/vendor/skrollr/skrollr.min.js"></script>
+	<script src="/assets/vendor/axios/axios.min.js"></script>
+
+
+
+	<!-- Swiper JS -->
+	<script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+	<!-- Main JS -->
+	<script src="/assets/js/main.min.js"></script>
+
+
+	<script src="/admin/vendor/datatables.net-buttons/js/buttons.html5.min.js"></script>
+	<script src="/admin/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
+	<script src="/admin/vendor/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+	<script src="/admin/pages/data-table/js/jszip.min.js"></script>
+	<script src="/admin/pages/data-table/js/pdfmake.min.js"></script>
+	<script src="/admin/pages/data-table/js/vfs_fonts.js"></script>
+	<script src="/admin/pages/data-table/extensions/responsive/js/dataTables.responsive.min.js"></script>
+	<script src="/admin/vendor/datatables.net-buttons/js/buttons.print.min.js"></script>
+	<script src="/admin/vendor/datatables.net-buttons/js/buttons.html5.min.js"></script>
+	<script src="/admin/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+	<script src="/admin/vendor/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+	<script type="text/javascript" src="/admin/vendor/popper.js/js/popper.min.js"></script>
+	<script type="text/javascript" src="/admin/vendor/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/assets/js/iziToast.min.js"></script>
+	<script src="/assets/js/select2.min.js"></script>
+
+</body>
+</html>

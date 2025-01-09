@@ -1,0 +1,65 @@
+<div class="header-bottom sticky-content fix-top sticky-header border-bottom">
+	<div class="container">
+		<div class="inner-wrap">
+			<div class="header-left flex-1">
+				<div class="dropdown category-dropdown has-border" data-visible="true">
+					<a href="#" class="category-toggle" role="button" data-toggle="dropdown" aria-haspopup="true"
+						aria-expanded="true" data-display="static" title="Browse Categories">
+						<i class="w-icon-category"></i>
+						<span>Browse Categories</span>
+					</a>
+					<div class="dropdown-box">
+						<ul class="menu vertical-menu category-menu">
+
+							<%categories.forEach(data => { %>
+
+							<li>
+								<a href="shop-fullwidth-banner.html">
+									<i class=<%= data.icon %>>
+
+
+									</i><%=data.name%>
+								</a>
+
+							</li>
+							<% }); %>
+
+
+
+
+							<li>
+								<a href="shop-banner-sidebar.html" class="font-weight-bold text-primary text-uppercase ls-25">
+									View All Categories<i class="w-icon-angle-right"></i>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<form method="get" action="#"
+					class="header-search hs-expanded hs-round d-none d-md-flex input-wrapper mr-4 ml-4">
+					<div class="select-box">
+						<select id="category" name="category">
+							<option value="">All Categories</option>
+							<option value="4">Fashion</option>
+							<option value="5">Furniture</option>
+							<option value="6">Shoes</option>
+							<option value="7">Sports</option>
+							<option value="8">Games</option>
+							<option value="9">Computers</option>
+							<option value="10">Electronics</option>
+							<option value="11">Kitchen</option>
+							<option value="12">Clothing</option>
+						</select>
+					</div>
+					<input type="text" class="form-control" name="search" id="search" placeholder="Search in..." required />
+					<button class="btn btn-search" type="submit"><i class="w-icon-search"></i>
+					</button>
+				</form>
+			</div>
+			<div class="header-right pr-0 ml-4">
+				<a href="#" class="d-xl-show mr-6"><i class="w-icon-map-marker mr-1"></i>Track Order</a>
+				<a href="#"><i class="w-icon-sale"></i>Daily Deals</a>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,106 @@
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="page-header">
+                    <div class="page-header-title">
+                        <h4>
+                            Dashboard
+                        </h4>
+                    </div>
+                    <div class="page-header-breadcrumb">
+                        <ul class="breadcrumb-title">
+                            <li class="breadcrumb-item">
+                                <a href="/admin/dashboard">
+                                    <i class="icofont icofont-home"></i>
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item"><a href="#!">Dashboard</a>
+                            </li>
+                            <li class="breadcrumb-item"><a href="#!">Bazaar Dashboard</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="page-body">
+                    <div class="row">
+                        <!-- counter-card-1 start-->
+                        <div class="col-md-12 col-xl-4">
+                            <div class="card counter-card-1">
+                                <div class="card-block-big">
+                                    <div>
+                                        <h3>
+                                            <%= data.products %>
+                                        </h3>
+                                        <p>
+                                            Total Products
+                                            <span class="f-right text-primary">
+                                                            <i class="icofont icofont-arrow-up"></i>
+                                                            <%= data.productsPercentage%> %
+                                                            </span></p>
+                                        <div class="progress ">
+                                            <div class="progress-bar progress-bar-striped progress-xs progress-bar-pink" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <i class="icofont icofont-comment"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- counter-card-1 end-->
+                        <!-- counter-card-2 start -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card counter-card-2">
+                                <div class="card-block-big">
+                                    <div>
+                                        <h3>
+                                            <%= data.transactions %> %
+                                        </h3>
+                                        <p>
+                                            Total Transactions
+                                            <span class="f-right text-success">
+                                                            <i class="icofont icofont-arrow-up"></i>
+                                                            <%= data.transactionsPercentage%> %
+                                                            </span>
+                                        </p>
+                                        <div class="progress ">
+                                            <div class="progress-bar progress-bar-striped progress-xs progress-bar-success" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <i class="icofont icofont-coffee-mug"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- counter-card-2 end -->
+                        <!-- counter-card-3 start -->
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card counter-card-3">
+                                <div class="card-block-big">
+                                    <div>
+                                        <h3>
+                                            <%= data.users %>
+                                        </h3>
+                                        <p>
+                                            Total Users
+                                            <span class="f-right text-default">
+                                                            <i class="icofont icofont-arrow-down"></i>
+                                                            <%= data.usersPercentage%> %
+                                                            </span></p>
+                                        <div class="progress ">
+                                            <div class="progress-bar progress-bar-striped progress-xs progress-bar-default" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <i class="icofont icofont-upload"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Warning Section Starts -->
+
+        <div id="styleSelector">
+
+        </div>
+    </div>
+</div>
