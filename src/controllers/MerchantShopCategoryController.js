@@ -1,5 +1,5 @@
 const db = require("../models");
-const { MerchantShopCategory, MerchantShop, Product } = db.sequelize.models;
+const { MerchantShopCategory, MerchantShop, Product } = db;
 const { v4: uuidv4 } = require("uuid");
 const MerchantShopCategoryController = {
 	async createMerchantShopCategory(req, res) {
@@ -59,10 +59,10 @@ const MerchantShopCategoryController = {
 					SET
 						name = :name,
 						description = :description,
-						
+
 						zone_uuid=:zoneUuid,
 						icon=:icon
-	
+
 					WHERE
 						uuid = :uuid
 					`;

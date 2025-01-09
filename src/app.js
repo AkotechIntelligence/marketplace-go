@@ -29,17 +29,28 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 //passport config
-app.use(
-	session({
+if(app.get('env') === 'development') {
+	 //use memory store
+	app.use(session({
 		secret: config.jwt_secret,
 		resave: false,
-		saveUninitialized: false,
-		store: new SequelizeStore({
-			db: db.sequelize,
-			tableName: "sessions", // Name of the table to store sessions
-		}),
-	})
-);
+		saveUninitialized: false
+	}));
+
+}else if(app.get('env') === 'production') {
+	app.use(
+		session({
+			secret: config.jwt_secret,
+			resave: false,
+			saveUninitialized: false,
+			store: new SequelizeStore({
+				db: db.sequelize,
+				tableName: "sessions", // Name of the table to store sessions
+			}),
+		})
+	);
+}
+
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -67,7 +78,7 @@ setTimeout(function () {
 	appLocalsData.populateAppLocals(function (appLocals) {
 		console.log("App locals Populated >>", appLocals);
 	});
-}, 1000);
+}, 7000);
 
 function assignLocals(res, appLocals) {
 	res.locals.categories = appLocals.categories;

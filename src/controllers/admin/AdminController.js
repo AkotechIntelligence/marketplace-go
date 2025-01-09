@@ -18,7 +18,7 @@ const {
 	Transaction,
 	GoogleAuthService,
 	MarketZones,
-} = db.sequelize.models;
+} = db;
 
 
 

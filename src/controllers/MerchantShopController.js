@@ -1,6 +1,6 @@
 const db = require("../models");
 
-const { MerchantShop } = db.sequelize.models;
+const { MerchantShop } = db;
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const fs = require("fs");

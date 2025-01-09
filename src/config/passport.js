@@ -2,7 +2,7 @@
 const LocalStrategy = require("passport-local").Strategy;
 
 const db = require("../models");
-const { User, Merchant } = db.sequelize.models;
+const { User, Merchant } = db;
 
 module.exports = async (passport) => {
 	passport.use(
@@ -14,11 +14,11 @@ module.exports = async (passport) => {
 			},
 			async (email, password, done) => {
 				try {
-					const user = await User.findOne({ where: { email }, raw: true }); 
+					const user = await User.findOne({ where: { email }, raw: true });
 
 					if (user) {
 						return done(null, user);
- 						
+
 					}else{
 						return done(null, false, { message: "Invalid email or password" });
 					}
@@ -28,7 +28,7 @@ module.exports = async (passport) => {
 					done(null, false, { message: "" });
 				}
 			})
-		
+
 	);
 
 	passport.use(
@@ -55,7 +55,7 @@ module.exports = async (passport) => {
 		)
 	);
 
-	 
+
 
 	// passas os dados para sessão
 	passport.serializeUser((user, done) => {

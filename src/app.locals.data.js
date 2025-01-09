@@ -1,9 +1,9 @@
 const db = require("./models");
-const { MerchantShopCategory, MarketZones } = db.sequelize.models;
+const { MerchantShopCategory, MarketZones } = db;
 const AppLocalsData = { categories: [], zones: [] };
 
 function fetchCategories() {
-	return MerchantShopCategory.findAll({ raw: true }).then(function (
+	return db.MerchantShopCategory.findAll({ raw: true }).then(function (
 		categories
 	) {
 		console.log("Shop categories fetched >>" + categories.length);
@@ -12,7 +12,7 @@ function fetchCategories() {
 }
 
 function fetchZones() {
-	return MarketZones.findAll({ raw: true }).then(function (zones) {
+	return db.MarketZones.findAll({ raw: true }).then(function (zones) {
 		console.log("Zones fetched >>>" + zones.length);
 		AppLocalsData.zones = zones;
 	});

@@ -1,18 +1,15 @@
 #!/usr/bin/env node
-
-/**
- * Module dependencies.
- */
 require("dotenv").config();
 const app = require("../src/app.js") ;
 const debug = require("debug")("MarketPlaceApp:server");
 const http = require("http");
 const ENV = process.env.NODE_ENV || "development";
 const PORT = process.env.PORT || 3400;
+const db = require("../src/models")
+const seeders = require('../src/database/seeders');
 /**
  * Get port from environment and store in Express.
  */
-
 const port = normalizePort(PORT);
 app.set("port", port);
 
@@ -20,6 +17,28 @@ app.set("port", port);
  * Create HTTP server.
  */
 const server = http.createServer(app);
+
+function syncDatabase(){
+	db.sequelize
+		.sync()
+		.then(() => {
+ 			console.log("Seeding data>>>");
+			seeders.seedData();
+			server.listen(port, () => {
+				const serverAddress = server.address();
+				const bindServer =
+					typeof serverAddress === "string"
+						? "pipe " + serverAddress
+						: "port " + serverAddress.port;
+				console.log(`\nServer listening ${bindServer} \n`);
+			});
+			server.on('error', onError);
+			server.on('listening', onListening);
+		})
+}
+setTimeout(syncDatabase, 5000);
+
+
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -31,7 +50,6 @@ server.on("listening", onListening);
 /**
  * Normalize a port into a number, string, or false.
  */
-
 function normalizePort(val) {
 	const port = parseInt(val, 10);
 
@@ -79,11 +97,3 @@ function onListening() {
 	debug("Listening on " + bind);
 }
 
-server.listen(PORT, () => {
-	const serverAddress = server.address();
-	const bindServer =
-		typeof serverAddress === "string"
-			? "pipe " + serverAddress
-			: "port " + serverAddress.port;
-	console.log(`\nServer listening ${bindServer} \n`);
-});

@@ -1,7 +1,7 @@
 const { Sequelize } = require("sequelize");
 const db = require("../models");
 
-const { Merchant } = db.sequelize.models;
+const { Merchant } = db;
 const { v4: uuidv4 } = require("uuid");
 const { z } = require("zod");
 async function updateUserPasswor(password) {

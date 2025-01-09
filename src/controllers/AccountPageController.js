@@ -17,7 +17,7 @@ const {
 	Transaction,
 	GoogleAuthService,
 	MarketZones,
-} = db.sequelize.models;
+} = db;
 
 const getHomePage = (req, res) => {
 	//res.render("page/home", { session: false });

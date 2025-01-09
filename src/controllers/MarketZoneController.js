@@ -9,7 +9,7 @@ const {
 	ProductSubSubcategory,
 	MerchantShop,
 	MerchantShopCategory,
-} = db.sequelize.models;
+} = db;
 const MarketZoneController = {
 	async createMarketZone(req, res) {
 		const { name, description } = req.body;

@@ -1,5 +1,5 @@
 const db = require("../models");
-const { ProductCategory, ProductSubcategory } = db.sequelize.models;
+const { ProductCategory, ProductSubcategory } = db;
 const { v4: uuidv4 } = require("uuid");
 const { z } = require("zod");
 const ProductCategoryController = {

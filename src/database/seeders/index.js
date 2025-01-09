@@ -5,11 +5,11 @@ const MerchantData = require("./merchant");
 const db = require("../../models");
 const uuidv4 = require("uuid").v4;
 
-const { MarketZones, MerchantShop, MerchantShopCategory, Merchant } =
-	db.sequelize.models;
+const { MarketZones, MerchantShop, MerchantShopCategory, Merchant } = db;
 
 async function populateMarketZones() {
-	const existingZones = MarketZones && (await MarketZones.findAll({}));
+	const existingZones = await db.MarketZones.findAll({});
+
 	if (existingZones.length > 0) return;
 
 	console.log("MarketZonesData", Zones);
@@ -18,7 +18,7 @@ async function populateMarketZones() {
 }
 
 async function populateMerchant() {
-	const existingZones = Merchant && (await Merchant.findAll({}));
+	const existingZones =  await db.Merchant.findAll({});
 	if (existingZones.length > 0) return;
 
 	await Merchant.bulkCreate(MerchantData, { returning: true });
@@ -26,8 +26,7 @@ async function populateMerchant() {
 }
 
 async function populateMerchantShop() {
-	const existingMerchant =
-		MerchantShop && (await MerchantShop.findAll({ raw: true }));
+	const existingMerchant = await db.MerchantShop.findAll({ raw: true });
 	if (existingMerchant.length > 0) return;
 	console.log("MerchantShopData>>", MerchantShopData);
 	const data = await populateMarketZones();
@@ -51,8 +50,7 @@ async function populateMerchantShop() {
 }
 
 async function populateMerchantShopCategory() {
-	const existingMerchantShopcategories =
-		MerchantShopCategory && (await MerchantShopCategory.findAll());
+	const existingMerchantShopcategories = await db.MerchantShopCategory.findAll();
 	if (existingMerchantShopcategories.length > 0) return;
 
 	console.log("MarketShopCategoryData", MarketShopCategoryData);
