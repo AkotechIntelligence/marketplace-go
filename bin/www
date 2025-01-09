@@ -7,6 +7,8 @@ const ENV = process.env.NODE_ENV || "development";
 const PORT = process.env.PORT || 3400;
 const db = require("../src/models")
 const seeders = require('../src/database/seeders');
+
+
 /**
  * Get port from environment and store in Express.
  */
@@ -44,7 +46,6 @@ setTimeout(syncDatabase, 5000);
  */
 server.on("error", onError);
 server.on("listening", onListening);
-
 
 
 /**
@@ -87,6 +88,7 @@ function onError(error) {
 			throw error;
 	}
 }
+
 /**
  * Event listener for HTTP server "listening" event.
  */
