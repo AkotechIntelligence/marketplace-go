@@ -13,7 +13,7 @@ async function populateMarketZones() {
 	if (existingZones.length > 0) return;
 
 	console.log("MarketZonesData", Zones);
-	await MarketZones.bulkCreate(Zones);
+	await db.MarketZones.bulkCreate(Zones);
 	return Zones;
 }
 
@@ -21,7 +21,7 @@ async function populateMerchant() {
 	const existingZones =  await db.Merchant.findAll({});
 	if (existingZones.length > 0) return;
 
-	await Merchant.bulkCreate(MerchantData, { returning: true });
+	await db.Merchant.bulkCreate(MerchantData, { returning: true });
 	//await Merchant.create(MerchantData, { returning: true });
 }
 
@@ -34,7 +34,7 @@ async function populateMerchantShop() {
 	console.log("MerchantZones>>", data);
 
 	if (data) {
-		await MerchantShop.bulkCreate(
+		await db.MerchantShop.bulkCreate(
 			[
 				{
 					uuid: data[0].uuid,
@@ -54,8 +54,7 @@ async function populateMerchantShopCategory() {
 	if (existingMerchantShopcategories.length > 0) return;
 
 	console.log("MarketShopCategoryData", MarketShopCategoryData);
-
-	await MerchantShopCategory.bulkCreate(MarketShopCategoryData, {
+	await db.MerchantShopCategory.bulkCreate(MarketShopCategoryData, {
 		returning: true,
 	});
 }
