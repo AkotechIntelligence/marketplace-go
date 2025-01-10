@@ -8,7 +8,6 @@ const sendEmail = require('../utils/sendMail');
 const bcrypt = require('bcryptjs');
 const Controller = {};
 
-
 Controller.getUserLogin = (req, res) => {
 	res.render("auth/login", {
 		title: "Login Page",
@@ -17,7 +16,6 @@ Controller.getUserLogin = (req, res) => {
 };
 
 Controller.getUserRegister = (req, res) => {
-	//res.locals.zones = AppGlobalData.zones;
 	req.flash('error', '');
 	res.render("auth/register", {
 		title: "Login Page",
@@ -28,12 +26,11 @@ Controller.getUserRegister = (req, res) => {
 	});
 };
 
-
 Controller.getMerchantLogin = (req, res) => {
 	res.render("auth/merchant-login", {
 		title: "Merchant Login",
 		layout: "layout/auth",
-		messages: req.flash() // Add this line to pass flash messages to the view
+		messages: req.flash()
 	});
 };
 
@@ -45,7 +42,7 @@ Controller.getMerchantRegister = async (req, res) => {
 		layout: "layout/auth",
 		marketZones,
 		shopCategories,
-		messages: req.flash() // Add this line to pass flash messages to the view
+		messages: req.flash()
 	});
 };
 
@@ -55,17 +52,16 @@ Controller.loginUser = async (req, res) => {
 	try {
 		const user = await db.User.findOne({ where: { email }, raw: true });
 		if (user && db.User.comparePassword(password, user)) {
-			const returnUrl = req.body.returnUrl || req.query.returnUrl || "/";
 			return passport.authenticate("login-user", {
-				successRedirect: returnUrl,
-				failureRedirect: "/auth/user/login", // ADD rota de falha no login
+				successRedirect: "/user",
+				failureRedirect: "/auth/user/login",
 				failureFlash: true,
 				failureMessage: "Invalid Email or password",
 			})(req, res);
-		}else{
+		} else {
 			req.flash('error', 'Invalid email or password');
 			return res.redirect('/auth/user/login');
-		}	// If no user found or password incorrect
+		}
 
 	} catch (error) {
 		console.error("Login error:", error);
@@ -80,14 +76,13 @@ Controller.loginMerchant = async (req, res) => {
 	try {
 		const merchant = await db.Merchant.findOne({ where: { email }, raw: true });
 		if (merchant && db.Merchant.comparePassword(password, merchant)) {
-			const returnUrl = req.body.returnUrl || req.query.returnUrl || "/";
 			return passport.authenticate("login-merchant", {
-				successRedirect: returnUrl,
-				failureRedirect: "/auth/merchant/login", // ADD rota de falha no login
+				successRedirect: "/merchant",
+				failureRedirect: "/auth/merchant/login",
 				failureFlash: true,
 				failureMessage: "Invalid Email or password",
 			})(req, res);
-		}else{
+		} else {
 			req.flash('error', 'Invalid email or password');
 			return res.redirect('/auth/merchant/login');
 		}
@@ -101,7 +96,6 @@ Controller.loginMerchant = async (req, res) => {
 
 Controller.registerUser = async (req, res) => {
 	try {
-		// Check if user already exists
 		const existingUser = await db.User.findOne({ where: { email: req.body.email } });
 		if (existingUser) {
 			return res.render('auth/register', {
@@ -122,7 +116,8 @@ Controller.registerUser = async (req, res) => {
 			firstName: req.body.firstName,
 			lastName: req.body.lastName,
 			password: req.body.password,
- 			fullName: `${req.body.firstName} ${req.body.lastName}`
+ 			fullName: `${req.body.firstName} ${req.body.lastName}`,
+			type: 'user'
 		}
 
 		const user = await db.User.create(userData);
@@ -131,7 +126,7 @@ Controller.registerUser = async (req, res) => {
 		res.redirect('/auth/user/login');
 	} catch (error) {
 		console.error("Error registering user:", error);
-		res.render('page/register', {
+		res.render('auth/register', {
 			error: error.message || 'An error occurred during registration',
 			layout: 'layout/auth'
 		});
@@ -144,7 +139,7 @@ Controller.registerMerchant = async (req, res) => {
 		const shopCategories = await db.MerchantShopCategory.findAll({ raw: true });
 		console.log("Register merchant request", req.body);
 		const { email, password, username, confirmPassword, type } = req.body;
-		// Check if merchant already exists
+		
 		const existingMerchant = await db.Merchant.findOne({ where: { email } });
 		if (existingMerchant) {
 			req.flash('error', 'A merchant with this email already exists');
@@ -168,9 +163,10 @@ Controller.registerMerchant = async (req, res) => {
 			lastName:req.body.lastName,
 			fullName: `${req.body.firstName} ${req.body.lastName}`,
 			dateOfBirth: req.body.dateOfBirth,
+			type: 'merchant'
 		}
 		const merchant = await db.Merchant.create(merchantData);
-        const merchantShopData ={
+        const merchantShopData = {
 			uuid: uuidv4(),
 			shopName: req.body.shopName,
 			description: req.body.description,
@@ -178,7 +174,7 @@ Controller.registerMerchant = async (req, res) => {
 			merchantUuid: merchant.uuid,
 		}
         const merchantShop = await db.MerchantShop.create(merchantShopData);
-		//redirect to login
+		
 		console.log("Merchant created", merchant);
 		console.log("Merchant shop created", merchantShop);
 		req.flash('success', 'Merchant registered successfully');
@@ -189,6 +185,7 @@ Controller.registerMerchant = async (req, res) => {
 		return res.redirect('/auth/merchant/register');
 	}
 }
+
 
 Controller.forgotPasswordMerchant = async (req, res) => {
 	try {
@@ -381,6 +378,4 @@ Controller.resetPasswordMerchant = async (req, res) => {
 };
 
 
-
-
-module.exports = Controller ;
+module.exports = Controller;
