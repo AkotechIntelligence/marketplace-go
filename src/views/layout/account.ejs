@@ -1,62 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<%- include('_partials/_head.ejs'); %>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - Account</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/account.css">
 </head>
 <body>
-	<header>
-		<%- include('_partials/_header_auth.ejs'); %>
-	</header>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand font-weight-bold" href="/">Marketplace</a>
+            <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-	<main>
-		<div class="container">
-			<div class="tab tab-vertical row gutter-lg">
-				<%- include('_partials/_account_sidebar.ejs'); %>
-				<div class="tab-content mb-6">
-					<%- body %>
-				</div>
+    <!-- Account Content -->
+    <div class="account-wrapper">
+        <div class="container">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-lg-3 mb-4">
+                    <div class="account-sidebar">
+                        <ul class="account-menu">
+                            <li class="account-menu-item">
+                                <a href="/account" class="account-menu-link <%= title === 'Dashboard' ? 'active' : '' %>">
+                                    <i class="fas fa-home account-menu-icon"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/account/shops" class="account-menu-link <%= title === 'Shops' ? 'active' : '' %>">
+                                    <i class="fas fa-store account-menu-icon"></i>
+                                    My Shops
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/account/products" class="account-menu-link <%= title === 'Products' ? 'active' : '' %>">
+                                    <i class="fas fa-box account-menu-icon"></i>
+                                    Products
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/account/orders" class="account-menu-link <%= title === 'Orders' ? 'active' : '' %>">
+                                    <i class="fas fa-shopping-bag account-menu-icon"></i>
+                                    Orders
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/account/settings" class="account-menu-link <%= title === 'Settings' ? 'active' : '' %>">
+                                    <i class="fas fa-cog account-menu-icon"></i>
+                                    Settings
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
 
-			</div>
-		</div>
-	</main>
+                <!-- Main Content -->
+                <div class="col-lg-9">
+                    <div class="account-content">
+                        <%- body %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-	<footer>
-		<%- include('_partials/_footer.ejs'); %>
-	</footer>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 footer-links">
+                    <h5>About Us</h5>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>About Marketplace</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Careers</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Press</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 footer-links">
+                    <h5>Customer Service</h5>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Contact Us</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Shipping Policy</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Returns & Exchanges</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 footer-links">
+                    <h5>Connect With Us</h5>
+                    <div class="social-icons">
+                        <a href="#" class="mr-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="mr-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="mr-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4" style="background-color: rgba(255,255,255,0.1)">
+            <div class="text-center py-3">
+                <p class="mb-0">&copy; 2024 Marketplace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
-	<script src="/assets/vendor/jquery/jquery.min.js"></script>
-	<script src="/assets/vendor/jquery.plugin/jquery.plugin.min.js"></script>
-	<script src="/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
-	<script src="/assets/vendor/zoom/jquery.zoom.js"></script>
-	<script src="/assets/vendor/jquery.countdown/jquery.countdown.min.js"></script>
-	<script src="/assets/vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
-	<script src="/assets/vendor/skrollr/skrollr.min.js"></script>
-	<script src="/assets/vendor/axios/axios.min.js"></script>
-
-
-
-	<!-- Swiper JS -->
-	<script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
-
-	<!-- Main JS -->
-	<script src="/assets/js/main.min.js"></script>
-
-
-	<script src="/admin/vendor/datatables.net-buttons/js/buttons.html5.min.js"></script>
-	<script src="/admin/vendor/datatables.net/js/jquery.dataTables.min.js"></script>
-	<script src="/admin/vendor/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
-	<script src="/admin/pages/data-table/js/jszip.min.js"></script>
-	<script src="/admin/pages/data-table/js/pdfmake.min.js"></script>
-	<script src="/admin/pages/data-table/js/vfs_fonts.js"></script>
-	<script src="/admin/pages/data-table/extensions/responsive/js/dataTables.responsive.min.js"></script>
-	<script src="/admin/vendor/datatables.net-buttons/js/buttons.print.min.js"></script>
-	<script src="/admin/vendor/datatables.net-buttons/js/buttons.html5.min.js"></script>
-	<script src="/admin/vendor/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
-	<script src="/admin/vendor/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
-	<script type="text/javascript" src="/admin/vendor/popper.js/js/popper.min.js"></script>
-	<script type="text/javascript" src="/admin/vendor/bootstrap/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="/assets/js/iziToast.min.js"></script>
-	<script src="/assets/js/select2.min.js"></script>
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

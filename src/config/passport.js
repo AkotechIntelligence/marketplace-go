@@ -1,8 +1,6 @@
 "use strict";
 const LocalStrategy = require("passport-local").Strategy;
-
 const db = require("../models");
-const { User, Merchant } = db;
 
 module.exports = async (passport) => {
 	passport.use(
@@ -14,7 +12,7 @@ module.exports = async (passport) => {
 			},
 			async (email, password, done) => {
 				try {
-					const user = await User.findOne({ where: { email }, raw: true });
+					const user = await db.User.findOne({ where: { email }, raw: true });
 
 					if (user) {
 						return done(null, user);
@@ -40,7 +38,7 @@ module.exports = async (passport) => {
 			},
 			async (email, password, done) => {
 				try {
-					const merchant = await Merchant.findOne({ where: { email }, raw: true });
+					const merchant = await db.Merchant.findOne({ where: { email }, raw: true });
 					if (merchant) {
 						return done(null, merchant);
 					} else {
@@ -64,10 +62,10 @@ module.exports = async (passport) => {
 	});
 
 	passport.deserializeUser((id, done) => {
-		User.findByPk(id, { raw: true })
+		db.User.findByPk(id, { raw: true })
 			.then((user) => done(null, user))
 			.catch((err) => {
-				Merchant.findByPk(id, { raw: true })
+				db.Merchant.findByPk(id, { raw: true })
 					.then((user) => done(null, user))
 					.catch((err) => done(err));
 			});
