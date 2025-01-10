@@ -1,0 +1,82 @@
+<div class="account-header">
+    <h1 class="account-title">My Wishlist</h1>
+    <p class="account-subtitle">Products you're interested in</p>
+</div>
+
+<div class="row">
+    <% wishlist.forEach(item => { %>
+        <div class="col-md-4 mb-4">
+            <div class="account-card">
+                <img src="<%= item.imageUrl %>" 
+                     alt="<%= item.name %>"
+                     class="img-fluid mb-3"
+                     style="height: 200px; width: 100%; object-fit: cover;">
+                <h5><%= item.name %></h5>
+                <p class="text-muted mb-2"><%= item.shop %></p>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="price">$<%= item.price %></div>
+                    <span class="badge badge-<%= item.inStock ? 'success' : 'danger' %>">
+                        <%= item.inStock ? 'In Stock' : 'Out of Stock' %>
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-primary btn-sm"
+                            onclick="addToCart('<%= item.id %>')"
+                            <%= !item.inStock ? 'disabled' : '' %>>
+                        Add to Cart
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm"
+                            onclick="removeFromWishlist('<%= item.id %>')">
+                        Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+    <% }); %>
+</div>
+
+<script>
+function addToCart(id) {
+    fetch(`/api/cart/add/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Added to cart successfully');
+        } else {
+            alert('Error adding to cart');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding to cart');
+    });
+}
+
+function removeFromWishlist(id) {
+    if (confirm('Are you sure you want to remove this item from your wishlist?')) {
+        fetch(`/api/wishlist/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error removing item');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error removing item');
+        });
+    }
+}
+</script>

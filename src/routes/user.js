@@ -1,36 +1,61 @@
 const express = require("express");
 const router = express.Router();
-const { isAuthenticated } = require("../config/auth");
+const isAuthenticatedUser = require("../middleware/isAuthenticatedUser");
 
-// User Dashboard
-router.get("/", isAuthenticated, (req, res) => {
+// Dashboard
+router.get("/", isAuthenticatedUser, (req, res) => {
     res.render("page/user/dashboard", {
         title: "Dashboard",
-        layout: "layout/account"
+        layout: "layout/user-account",
+        user: req.user
     });
 });
 
-// User Orders
-router.get("/orders", isAuthenticated, (req, res) => {
+// Orders
+router.get("/orders", isAuthenticatedUser, (req, res) => {
     res.render("page/user/orders", {
         title: "My Orders",
-        layout: "layout/account"
+        layout: "layout/user-account",
+        user: req.user,
+        orders: [] // TODO: Fetch actual orders data
     });
 });
 
-// User Profile
-router.get("/profile", isAuthenticated, (req, res) => {
-    res.render("page/user/profile", {
-        title: "My Profile", 
-        layout: "layout/account"
-    });
-});
-
-// User Wishlist
-router.get("/wishlist", isAuthenticated, (req, res) => {
+// Wishlist
+router.get("/wishlist", isAuthenticatedUser, (req, res) => {
     res.render("page/user/wishlist", {
         title: "My Wishlist",
-        layout: "layout/account" 
+        layout: "layout/user-account",
+        user: req.user,
+        wishlist: [] // TODO: Fetch actual wishlist data
+    });
+});
+
+// Profile
+router.get("/profile", isAuthenticatedUser, (req, res) => {
+    res.render("page/user/profile", {
+        title: "My Profile",
+        layout: "layout/user-account",
+        user: req.user
+    });
+});
+
+// Addresses
+router.get("/addresses", isAuthenticatedUser, (req, res) => {
+    res.render("page/user/addresses", {
+        title: "My Addresses",
+        layout: "layout/user-account",
+        user: req.user,
+        addresses: [] // TODO: Fetch actual addresses data
+    });
+});
+
+// Settings
+router.get("/settings", isAuthenticatedUser, (req, res) => {
+    res.render("page/user/settings", {
+        title: "Account Settings",
+        layout: "layout/user-account",
+        user: req.user
     });
 });
 

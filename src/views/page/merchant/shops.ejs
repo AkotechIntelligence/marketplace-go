@@ -1,0 +1,55 @@
+<div class="account-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="account-title">My Shops</h1>
+            <p class="account-subtitle">Manage your marketplace shops</p>
+        </div>
+        <a href="/merchant/shops/create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Shop
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <% shops.forEach(shop => { %>
+        <div class="col-md-6 mb-4">
+            <div class="account-card">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="<%= shop.imageUrl || '/images/shop-placeholder.png' %>" 
+                         alt="<%= shop.name %>" 
+                         class="rounded-circle mr-3"
+                         style="width: 60px; height: 60px; object-fit: cover;">
+                    <div>
+                        <h5 class="mb-1"><%= shop.name %></h5>
+                        <p class="text-muted mb-0"><%= shop.category %></p>
+                    </div>
+                </div>
+                <div class="shop-stats d-flex justify-content-between mb-3">
+                    <div class="text-center">
+                        <h6 class="mb-1"><%= shop.productsCount %></h6>
+                        <small class="text-muted">Products</small>
+                    </div>
+                    <div class="text-center">
+                        <h6 class="mb-1"><%= shop.ordersCount %></h6>
+                        <small class="text-muted">Orders</small>
+                    </div>
+                    <div class="text-center">
+                        <h6 class="mb-1">$<%= shop.revenue %></h6>
+                        <small class="text-muted">Revenue</small>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="/merchant/shops/<%= shop.id %>" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="/merchant/shops/<%= shop.id %>/products" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-box"></i> Products
+                    </a>
+                    <a href="/merchant/shops/<%= shop.id %>/orders" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-shopping-bag"></i> Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    <% }); %>
+</div>

@@ -1,19 +1,80 @@
 const express = require("express");
 const router = express.Router();
-const AccountPageController = require("../controllers/AccountPageController");
-const { isAuthenticated } = require("../config/auth");
+const isAuthenticatedMerchant = require("../middleware/isAuthenticatedMerchant");
 
-// Merchant Dashboard
-router.get("/", isAuthenticated, AccountPageController.getHomePage);
+// Dashboard
+router.get("/", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/dashboard", {
+        title: "Dashboard",
+        layout: "layout/merchant-account",
+        user: req.user
+    });
+});
 
-// Merchant Shops
-router.get("/shops", isAuthenticated, AccountPageController.getMerchantshops);
-router.get("/shops/create", isAuthenticated, AccountPageController.renderAddMerchantShop);
-router.get("/shops/:uuid/edit", isAuthenticated, AccountPageController.getMerchantShoptById);
+// Shops
+router.get("/shops", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/shops", {
+        title: "My Shops",
+        layout: "layout/merchant-account",
+        user: req.user,
+        shops: [] // TODO: Fetch actual shops data
+    });
+});
 
-// Merchant Products
-router.get("/products", isAuthenticated, AccountPageController.getProducts);
-router.get("/products/create", isAuthenticated, AccountPageController.renderAddProduct);
-router.get("/products/:uuid/edit", isAuthenticated, AccountPageController.getProductsById);
+// Create Shop
+router.get("/shops/create", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/create-shop", {
+        title: "Create Shop",
+        layout: "layout/merchant-account",
+        user: req.user
+    });
+});
+
+// Products
+router.get("/products", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/products", {
+        title: "Products",
+        layout: "layout/merchant-account",
+        user: req.user,
+        products: [] // TODO: Fetch actual products data
+    });
+});
+
+// Create Product
+router.get("/products/create", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/create-product", {
+        title: "Add Product",
+        layout: "layout/merchant-account",
+        user: req.user
+    });
+});
+
+// Orders
+router.get("/orders", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/orders", {
+        title: "Orders",
+        layout: "layout/merchant-account",
+        user: req.user,
+        orders: [] // TODO: Fetch actual orders data
+    });
+});
+
+// Analytics
+router.get("/analytics", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/analytics", {
+        title: "Analytics",
+        layout: "layout/merchant-account",
+        user: req.user
+    });
+});
+
+// Settings
+router.get("/settings", isAuthenticatedMerchant, (req, res) => {
+    res.render("page/merchant/settings", {
+        title: "Settings",
+        layout: "layout/merchant-account",
+        user: req.user
+    });
+});
 
 module.exports = router;

@@ -3,7 +3,7 @@ const passport = require("passport");
 
 const isAuthenticated = (req, res, next) => {
 	if (req.isAuthenticated()) return next();
-	return res.redirect("/login"); // ADD rota de retorno caso não autenticado
+	return res.redirect("/auth/login"); // ADD rota de retorno caso não autenticado
 };
 
 const isNotAuthenticated = (req, res, next) => {

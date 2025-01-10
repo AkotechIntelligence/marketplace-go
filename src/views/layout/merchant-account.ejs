@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - Merchant Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/account.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand font-weight-bold" href="/">Marketplace</a>
+            <div class="ml-auto">
+                <span class="mr-3">Welcome, <%= user.firstName %></span>
+                <a href="/auth/logout" class="btn btn-outline-primary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Account Content -->
+    <div class="account-wrapper">
+        <div class="container">
+            <div class="row">
+                <!-- Merchant Sidebar -->
+                <div class="col-lg-3 mb-4">
+                    <div class="account-sidebar">
+                        <ul class="account-menu">
+                            <li class="account-menu-item">
+                                <a href="/merchant" class="account-menu-link <%= title === 'Dashboard' ? 'active' : '' %>">
+                                    <i class="fas fa-home account-menu-icon"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/merchant/shops" class="account-menu-link <%= title === 'Shops' ? 'active' : '' %>">
+                                    <i class="fas fa-store account-menu-icon"></i>
+                                    My Shops
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/merchant/products" class="account-menu-link <%= title === 'Products' ? 'active' : '' %>">
+                                    <i class="fas fa-box account-menu-icon"></i>
+                                    Products
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/merchant/orders" class="account-menu-link <%= title === 'Orders' ? 'active' : '' %>">
+                                    <i class="fas fa-shopping-bag account-menu-icon"></i>
+                                    Orders
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/merchant/analytics" class="account-menu-link <%= title === 'Analytics' ? 'active' : '' %>">
+                                    <i class="fas fa-chart-line account-menu-icon"></i>
+                                    Analytics
+                                </a>
+                            </li>
+                            <li class="account-menu-item">
+                                <a href="/merchant/settings" class="account-menu-link <%= title === 'Settings' ? 'active' : '' %>">
+                                    <i class="fas fa-cog account-menu-icon"></i>
+                                    Settings
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-lg-9">
+                    <div class="account-content">
+                        <%- body %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

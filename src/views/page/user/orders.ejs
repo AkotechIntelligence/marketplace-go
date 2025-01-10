@@ -1,0 +1,42 @@
+<div class="account-header">
+    <h1 class="account-title">My Orders</h1>
+    <p class="account-subtitle">View and track your orders</p>
+</div>
+
+<div class="account-card">
+    <div class="table-responsive">
+        <table class="account-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% orders.forEach(order => { %>
+                    <tr>
+                        <td>#<%= order.id %></td>
+                        <td><%= order.date %></td>
+                        <td><%= order.itemCount %> items</td>
+                        <td>$<%= order.total %></td>
+                        <td>
+                            <span class="badge badge-<%= order.statusColor %>">
+                                <%= order.status %>
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/user/orders/<%= order.id %>" 
+                               class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
