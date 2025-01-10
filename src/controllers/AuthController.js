@@ -111,7 +111,7 @@ Controller.registerUser = async (req, res) => {
 		}
 
 		if (req.body.password !== req.body.confirmPassword) {
-			return res.render('page/register', {
+			return res.render('auth/register', {
 				error: 'Passwords do not match',
 				layout: 'layout/auth'
 			});
