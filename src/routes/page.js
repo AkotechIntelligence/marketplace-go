@@ -44,18 +44,14 @@ router.use(function (req, res, next) {
 });
 
 router.get("/product/:productuuid", ProductController.getProduct);
-
 // Account
 router.get("/account", AccountPageController.getHomePage);
 router.get("/account/createshop", AccountPageController.renderAddMerchantShop);
-
 router.get("/account/shops", AccountPageController.getMerchantshops);
-
 router.get(
 	"/account/shop/edit/:uuid",
 	AccountPageController.getMerchantShoptById
 );
-
 router.get("/account/products", AccountPageController.getProducts);
 router.get("/account/createproduct", AccountPageController.renderAddProduct);
 router.get(

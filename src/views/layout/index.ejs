@@ -1,36 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<%- include('_partials/_head.ejs'); %>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #007bff;
+            --secondary: #6c757d;
+            --accent: #ff5722;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Enhanced Navbar */
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,.1);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+        }
+
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .navbar-nav .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* Enhanced Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #ff9966, #ff5e62);
+            padding: 120px 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80') center/cover;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero-section h1 {
+            font-weight: 700;
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero-section .btn-shop-now {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            background: white;
+            color: var(--accent);
+            border: 2px solid white;
+        }
+
+        .hero-section .btn-shop-now:hover {
+            background: transparent;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Enhanced Feature Cards */
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 1rem 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary), #0056b3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Enhanced Footer */
+        footer {
+            background-color: var(--dark);
+            color: var(--light);
+            padding: 70px 0 20px;
+        }
+
+        .footer-links h5 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-links h5::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .footer-links ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #adb5bd;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </head>
 <body>
-	<header>
-		<%- include('_partials/_header.ejs'); %>
-	</header>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand font-weight-bold" href="/">Marketplace</a>
+            <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="form-inline mx-auto">
+                    <div class="input-group">
+                        <input class="form-control border-right-0" type="search" placeholder="Search products...">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-primary border-left-0" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <ul class="navbar-nav ml-auto">
+                    <% if(user) { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/account">My Account</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/logout">Logout</a>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/user/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/user/register">Register</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-	<main>
-		<div class="container">
-			<%- body %>
-		</div>
-	</main>
+    <!-- Main Content -->
+    <main>
+        <%- body %>
+    </main>
 
-	<footer>
-		<%- include('_partials/_footer.ejs'); %>
-	</footer>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 footer-links">
+                    <h5>About Us</h5>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>About Marketplace</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Careers</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Press</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 footer-links">
+                    <h5>Customer Service</h5>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Contact Us</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Shipping Policy</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right mr-2"></i>Returns & Exchanges</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 footer-links">
+                    <h5>Connect With Us</h5>
+                    <div class="social-icons">
+                        <a href="#" class="mr-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="mr-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="mr-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4" style="background-color: rgba(255,255,255,0.1)">
+            <div class="text-center py-3">
+                <p class="mb-0">&copy; 2024 Marketplace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
-	<script src="/assets/vendor/jquery/jquery.min.js"></script>
-	<script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
-
-	<script src="/assets/vendor/sticky/sticky.js"></script>
-	<script src="/assets/vendor/jquery.plugin/jquery.plugin.min.js"></script>
-	<script src="/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
-	<script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
-	<script src="/assets/vendor/jquery.countdown/jquery.countdown.min.js"></script>
-	<script src="/assets/vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
-	<script src="/assets/vendor/floating-parallax/parallax.min.js"></script>
-	<script src="/assets/vendor/zoom/jquery.zoom.js"></script>
-
-	<script src="/assets/js/main.min.js"></script>
-
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

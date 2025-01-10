@@ -24,9 +24,6 @@ let sequelize = new Sequelize(
 
 const models = {};
 
-
-
-
 sequelize.authenticate().then(() => {
 	console.log("Connection has been established successfully.");
 	loadModels(sequelize, Sequelize);
