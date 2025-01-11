@@ -26,7 +26,7 @@ Controller.getHomePage = async (req, res) => {
 
 		// Get featured products with their images using a JOIN query
 		const featuredProducts = await db.sequelize.query(`
-			SELECT p.*, pi.imageUrl 
+			SELECT p.*, pi."imageUrl"
 			FROM "Product" p
 			LEFT JOIN "ProductImages" pi ON p.uuid = pi."productUuid"
 			ORDER BY p."createdAt" DESC
