@@ -1,80 +1,51 @@
 const express = require("express");
 const router = express.Router();
 const isAuthenticatedMerchant = require("../middleware/isAuthenticatedMerchant");
+const MerchantController = require("../controllers/merchants/MerchantController");
+const MerchantShopController = require("../controllers/merchants/MerchantShopController");
+const MerchantProductController = require("../controllers/merchants/ProductController");
+const MerchantOrderController = require("../controllers/merchants/OrderController");
+const uploadController = require("../controllers/UploadController");
 
 // Dashboard
-router.get("/", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/dashboard", {
-        title: "Dashboard",
-        layout: "layout/merchant-account",
-        user: req.user
-    });
-});
+router.get("/", isAuthenticatedMerchant, MerchantController.getDashboard);
 
-// Shops
-router.get("/shops", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/shops", {
-        title: "My Shops",
-        layout: "layout/merchant-account",
-        user: req.user,
-        shops: [] // TODO: Fetch actual shops data
-    });
-});
+// Profile Routes
+router.get("/profile", isAuthenticatedMerchant, MerchantController.getMerchantProfile);
+router.post("/profile", 
+    isAuthenticatedMerchant,
+    ...uploadController.getUploader('merchants', 'fileInputsImage'),
+    MerchantController.createMerchant
+);
+router.put("/profile/:id",
+    isAuthenticatedMerchant,
+    ...uploadController.getUploader('merchants', 'fileInputsImage'),
+    MerchantController.editMerchant
+);
+router.delete("/profile/image/:id",
+    isAuthenticatedMerchant,
+    MerchantController.deleteMerchantImage
+);
 
-// Create Shop
-router.get("/shops/create", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/create-shop", {
-        title: "Create Shop",
-        layout: "layout/merchant-account",
-        user: req.user
-    });
-});
+// Shop Routes
+router.get("/shops", isAuthenticatedMerchant, MerchantShopController.getShops);
+router.get("/shops/create", isAuthenticatedMerchant, MerchantShopController.renderCreateShop);
+router.post("/shops/create",
+    isAuthenticatedMerchant,
+    ...uploadController.getUploader('shops', 'fileInputsImage'),
+    MerchantShopController.createShop
+);
 
-// Products
-router.get("/products", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/products", {
-        title: "Products",
-        layout: "layout/merchant-account",
-        user: req.user,
-        products: [] // TODO: Fetch actual products data
-    });
-});
+// Product Routes
+router.get("/products", isAuthenticatedMerchant, MerchantProductController.getProducts);
+router.get("/products/create", isAuthenticatedMerchant, MerchantProductController.renderCreateProduct);
+router.post("/products/create",
+    isAuthenticatedMerchant,
+    ...uploadController.getMultiUploader('products', 'files', 5),
+    MerchantProductController.createProduct
+);
 
-// Create Product
-router.get("/products/create", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/create-product", {
-        title: "Add Product",
-        layout: "layout/merchant-account",
-        user: req.user
-    });
-});
-
-// Orders
-router.get("/orders", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/orders", {
-        title: "Orders",
-        layout: "layout/merchant-account",
-        user: req.user,
-        orders: [] // TODO: Fetch actual orders data
-    });
-});
-
-// Analytics
-router.get("/analytics", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/analytics", {
-        title: "Analytics",
-        layout: "layout/merchant-account",
-        user: req.user
-    });
-});
-
-// Settings
-router.get("/settings", isAuthenticatedMerchant, (req, res) => {
-    res.render("page/merchant/settings", {
-        title: "Settings",
-        layout: "layout/merchant-account",
-        user: req.user
-    });
-});
+// Order Routes
+router.get("/orders", isAuthenticatedMerchant, MerchantOrderController.getMerchantOrders);
 
 module.exports = router;
