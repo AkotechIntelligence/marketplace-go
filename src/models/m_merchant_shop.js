@@ -2,7 +2,6 @@ module.exports = (sequelize, DataTypes) => {
 	const MerchantShop = sequelize.define(
 		"MerchantShop",
 		{
-			 
 			uuid: {
 				type: DataTypes.STRING,
 				allowNull: false,
@@ -11,18 +10,24 @@ module.exports = (sequelize, DataTypes) => {
 			shopName: DataTypes.STRING,
 			description: DataTypes.STRING,
 			zoneUuid: DataTypes.STRING,
-			merchantShopCategoryUuid: DataTypes.STRING, /// added newly
+			merchantShopCategoryUuid: DataTypes.STRING,
 			merchantUuid: DataTypes.STRING,
 			imageUrl: {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
-			//shopCategoryUuid: DataTypes.STRING,
 		},
 		{
 			tableName: "MerchantShop",
 		}
 	);
+
+	MerchantShop.associate = function(models) {
+		MerchantShop.hasMany(models.Product, {
+			foreignKey: 'merchantShopUuid',
+			sourceKey: 'uuid'
+		});
+	};
 
 	return MerchantShop;
 };

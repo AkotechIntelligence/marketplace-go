@@ -4,7 +4,6 @@ module.exports = (sequelize, DataTypes) => {
 		{
 			uuid: {
 				type: DataTypes.STRING,
-
 				primaryKey: true,
 				allowNull: false,
 			},
@@ -28,26 +27,15 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			// zoneUuid: {
-			// 	type: DataTypes.STRING,
-			// 	allowNull: false,
-			// },
-			// merchantShopCategoryUuid: {
-			// 	type: DataTypes.STRING,
-			// 	allowNull: false,
-			// },
-
 			merchantShopUuid: {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			categoryUuid: {
-				// this is productCategory
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			subCategoryUuid: {
-				// this is subproductCategory
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
@@ -56,6 +44,13 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: "Product",
 		}
 	);
+
+	Product.associate = function(models) {
+		Product.belongsTo(models.MerchantShop, {
+			foreignKey: 'merchantShopUuid',
+			targetKey: 'uuid'
+		});
+	};
 
 	return Product;
 };

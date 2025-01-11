@@ -8,7 +8,7 @@ module.exports = {
 		operatorsAliases: 0,
 		define: {
 			timestamp: true,
-			underscored: true,
+			underscored: false,
 		},
 		pool: {
 			max: 5,
@@ -33,7 +33,7 @@ module.exports = {
 		operatorsAliases: 0,
 		define: {
 			timestamp: true,
-			underscored: true,
+			underscored: false,
 		},
 		pool: {
 			max: 5,
