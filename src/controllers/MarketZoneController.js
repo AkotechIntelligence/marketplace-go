@@ -1,216 +1,174 @@
 const { QueryTypes } = require("sequelize");
 const db = require("../models");
+const logger = require("../logger");
 
-const {
-	MarketZones,
-	ProductCategory,
-	ProductImages,
-	ProductSubcategory,
-	ProductSubSubcategory,
-	MerchantShop,
-	MerchantShopCategory,
-} = db;
 const MarketZoneController = {
 	async createMarketZone(req, res) {
-		const { name, description } = req.body;
-		const marketZone = await MarketZones.create({ name, description });
-		await marketZone.save();
-		res.json({
-			message: "done",
-		});
-		// res.render("page/home", { session: false });
+		try {
+			const { name, description } = req.body;
+			const marketZone = await db.MarketZone.create({ name, description });
+			res.json({
+				message: "done",
+				data: marketZone
+			});
+		} catch (error) {
+			logger.error("Error creating market zone:", error);
+			res.status(500).json({
+				message: "Error creating market zone",
+				error: error.message
+			});
+		}
 	},
 
 	async getAllZones(req, res) {
-		const mzone = await MarketZones.findAll({
-			include: [
-				{
-					model: MerchantShop,
-				},
-			],
-		});
-		res.json({
-			data: mzone,
-			message: "Data successfully retrieved",
-			status: "success",
-		});
+		try {
+			const zones = await db.MarketZone.findAll({
+				include: [
+					{
+						model: db.MerchantShop,
+					},
+				],
+			});
+			res.json({
+				data: zones,
+				message: "Data successfully retrieved",
+				status: "success",
+			});
+		} catch (error) {
+			logger.error("Error fetching zones:", error);
+			res.status(500).json({
+				message: "Error fetching zones",
+				error: error.message
+			});
+		}
 	},
 
 	async renderZoneById(req, res) {
-		const id = req.params.id;
-		const findByUUID = await MarketZones.findOne({
-			where: {
-				zone_uuid: id,
-			},
-			raw: true,
-		});
+		try {
+			const id = req.params.id;
+			const zone = await db.MarketZone.findOne({
+				where: {
+					zoneUuid: id,
+				},
+				raw: true,
+			});
 
-		if (!findByUUID) {
-			return res.redirect("/");
-		}
+			if (!zone) {
+				return res.redirect("/");
+			}
 
-		///Get necessary categories
-
-		const result = await db.sequelize.query(
-			`SELECT msc.*, mz.name AS zone_name
-		FROM "MerchantShopCategory" msc
-		JOIN "MarketZones" mz ON msc.zone_uuid = mz.zone_uuid
-		and msc."zone_uuid"='${findByUUID.zoneUuid}'
-		`,
-			{ type: QueryTypes.SELECT, raw: true }
-		);
-		console.log("result>>", result);
-		res.locals.categories = result;
-
-		// GET ALL SHOPS
-		const merchantShop = await MerchantShop.findAll({
-			where: { zoneUuid: id },
-		});
-
-		console.log("merchantShop>>>", merchantShop);
-		const allMerchantShopMatchingZoneId = merchantShop
-			.map((r) => `'${r.uuid}'`)
-			.join(",");
-
-		/// GET ALL PRODUCTS BASED ON ZONES
-
-		// const products = await sequelize.query(
-		// 	`SELECT
-		// 	p.uuid AS product_uuid,
-		// 	p.slug,
-		// 	p.name,
-		// 	p.description,
-		// 	p.price,
-		// 	p.quantity,
-		// 	p.zone_uuid,
-		// 	p.merchant_shop_category_uuid,
-		// 	p.category_uuid,
-		// 	p.sub_category_uuid,
-		// 	pi.id AS image_uuid,
-		// 	pi.image_url
-		//  FROM
-		// 	"Product" p
-		//  LEFT JOIN
-		// 	"ProductImages" pi ON p."uuid" = pi."product_uuid"
-		//  WHERE
-		// 	p."zone_uuid" =:zoneUuid`,
-		// 	{
-		// 		replacements: { zoneUuid: findByUUID.zoneUuid },
-		// 		type: QueryTypes.SELECT,
-		// 	}
-		// );
-
-		console.log("allMerchantShopMatchingZoneId", allMerchantShopMatchingZoneId);
-		let products;
-		if (allMerchantShopMatchingZoneId.length > 0) {
-			products = await db.sequelize.query(
-				`SELECT *
-			 FROM
-				"Product"
-			 WHERE
-				"merchant_shop_uuid" in(${allMerchantShopMatchingZoneId})`,
-				{
-					type: QueryTypes.SELECT,
-					raw: true,
+			const categories = await db.sequelize.query(
+				`SELECT msc.*, mz.name AS zone_name
+				FROM "MerchantShopCategory" msc
+				JOIN "MarketZone" mz ON msc.zone_uuid = mz.zone_uuid
+				WHERE msc.zone_uuid = :zoneUuid`,
+				{ 
+					replacements: { zoneUuid: zone.zoneUuid },
+					type: QueryTypes.SELECT 
 				}
 			);
-		} else {
-			products = await db.sequelize.query(
-				`SELECT *
-			 FROM
-				"Product"
-			 WHERE
-			1=0`,
-				{
-					type: QueryTypes.SELECT,
-					raw: true,
-				}
-			);
+
+			res.locals.categories = categories;
+
+			const merchantShops = await db.MerchantShop.findAll({
+				where: { zoneUuid: id },
+			});
+
+			const shopIds = merchantShops.map(shop => `'${shop.uuid}'`).join(",");
+
+			let products = [];
+			if (shopIds.length > 0) {
+				products = await db.sequelize.query(
+					`SELECT * FROM "Product" WHERE "merchant_shop_uuid" IN (${shopIds})`,
+					{
+						type: QueryTypes.SELECT,
+						raw: true,
+					}
+				);
+
+				// Add images to products
+				products = await Promise.all(products.map(async (product) => {
+					const images = await db.ProductImage.findAll({
+						where: { productUuid: product.uuid },
+					});
+					return {
+						...product,
+						images,
+					};
+				}));
+			}
+
+			res.render("page/zonebyId", {
+				title: zone.name,
+				layout: "layout/zonebyid",
+				products: products,
+			});
+		} catch (error) {
+			logger.error("Error rendering zone:", error);
+			res.render("errors/500", {
+				title: "Server Error",
+				layout: "layout/blank-layout",
+				error: error.message
+			});
 		}
-
-		console.log("products>>", products);
-		// add Images
-		const productsWithImages = await Promise.all(
-			products.map(async (r) => {
-				const images = await ProductImages.findAll({
-					where: {
-						productUuid: r.uuid,
-					},
-				});
-				return {
-					...r,
-					images,
-				};
-			})
-		);
-
-		console.log("productsWithImages", productsWithImages);
-		res.render("page/zonebyId", {
-			title: `${findByUUID.name}`,
-			layout: "layout/zonebyid",
-			products: productsWithImages,
-		});
 	},
 
 	async getPageByMerchantId(req, res) {
-		const id = req.params.id;
-		const findByUUID = await MerchantShopCategory.findOne({
-			where: {
-				uuid: id,
-			},
-			raw: true,
-		});
-
-		if (!findByUUID) {
-			return res.redirect("/");
-		}
-
-		///Get necessary categories
-
-		const result = await db.sequelize.query(
-			`SELECT msc.*, mz.name AS zone_name
-		FROM "MerchantShopCategory" msc
-		JOIN "MarketZones" mz ON msc.zone_uuid = mz.zone_uuid
-		and msc."zone_uuid"='${findByUUID.zoneUuid}'
-		`,
-			{ type: QueryTypes.SELECT, raw: true }
-		);
-		console.log("result>>", result);
-		res.locals.categories = result;
-
-		const products = await db.sequelize.query(
-			`SELECT *
-		 FROM
-			"Product"
-		 WHERE
-			"merchant_shop_category_uuid" ='${id}'`,
-			{
-				type: QueryTypes.SELECT,
+		try {
+			const id = req.params.id;
+			const category = await db.MerchantShopCategory.findOne({
+				where: {
+					uuid: id,
+				},
 				raw: true,
+			});
+
+			if (!category) {
+				return res.redirect("/");
 			}
-		);
-		console.log("products>>", products);
-		// add Images
-		const productsWithImages = await Promise.all(
-			products.map(async (r) => {
-				const images = await ProductImages.findAll({
-					where: {
-						productUuid: r.uuid,
-					},
+
+			const categories = await db.sequelize.query(
+				`SELECT msc.*, mz.name AS zone_name
+				FROM "MerchantShopCategory" msc
+				JOIN "MarketZone" mz ON msc.zone_uuid = mz.zone_uuid
+				WHERE msc.zone_uuid = :zoneUuid`,
+				{ 
+					replacements: { zoneUuid: category.zoneUuid },
+					type: QueryTypes.SELECT 
+				}
+			);
+
+			res.locals.categories = categories;
+
+			const products = await db.Product.findAll({
+				where: { merchantShopCategoryUuid: id },
+				raw: true,
+			});
+
+			// Add images to products
+			const productsWithImages = await Promise.all(products.map(async (product) => {
+				const images = await db.ProductImage.findAll({
+					where: { productUuid: product.uuid },
 				});
 				return {
-					...r,
+					...product,
 					images,
 				};
-			})
-		);
+			}));
 
-		console.log("productsWithImages", productsWithImages);
-		res.render("page/zonebyId", {
-			title: `${findByUUID.name}`,
-			layout: "layout/zonebyid",
-			products: productsWithImages,
-		});
+			res.render("page/zonebyId", {
+				title: category.name,
+				layout: "layout/zonebyid",
+				products: productsWithImages,
+			});
+		} catch (error) {
+			logger.error("Error getting merchant page:", error);
+			res.render("errors/500", {
+				title: "Server Error",
+				layout: "layout/blank-layout",
+				error: error.message
+			});
+		}
 	},
 };
 

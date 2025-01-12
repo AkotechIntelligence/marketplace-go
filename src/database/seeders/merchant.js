@@ -1,4 +1,5 @@
-const uuidv4 = require("uuid").v4;
+const { v4: uuidv4 } = require("uuid");
+const bcrypt = require('bcryptjs');
 
 const Merchant = [
 	{
@@ -7,10 +8,11 @@ const Merchant = [
 		lastName: "Nimo",
 		fullName: "Nana Nimo",
 		dateOfBirth: "1993-06-03",
-		email: "bgyna@gmail.com",
-		password: "nyajie7#@87",
+		email: "merchant@example.com",
+		password: bcrypt.hashSync("password123", 10),
 		phoneNumber: "2335893758",
-		idCardNumber: "",
+		idCardNumber: "ID123456",
+		type: "merchant"
 	},
 ];
 

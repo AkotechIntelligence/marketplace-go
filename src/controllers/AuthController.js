@@ -1,381 +1,334 @@
-const User = require("../models/User");
+const User = require("../models");
 const db = require("../models");
 const { v4: uuidv4 } = require('uuid');
-const Merchant = require("../models/m_merchant");
 const passport = require("passport");
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendMail');
 const bcrypt = require('bcryptjs');
-const Controller = {};
+const logger = require('../logger');
 
-Controller.getUserLogin = (req, res) => {
-	res.render("auth/login", {
-		title: "Login Page",
-		layout: "layout/auth",
-	});
-};
+const Controller = {
+    // User Login
+    getUserLogin(req, res) {
+        res.render('auth/login', {
+            title: 'Login',
+            layout: 'layout/auth'
+        });
+    },
 
-Controller.getUserRegister = (req, res) => {
-	req.flash('error', '');
-	res.render("auth/register", {
-		title: "Login Page",
-		layout: "layout/auth",
-		messages: req.flash(),
-		error:"",
-		data:{error:""}
-	});
-};
-
-Controller.getMerchantLogin = (req, res) => {
-	res.render("auth/merchant-login", {
-		title: "Merchant Login",
-		layout: "layout/auth",
-		messages: req.flash()
-	});
-};
-
-Controller.getMerchantRegister = async (req, res) => {
-	const marketZones = await db.MarketZones.findAll({ raw: true });
-	const shopCategories = await db.MerchantShopCategory.findAll({ raw: true });
-	res.render("auth/merchant-register", {
-		title: "Merchant Registration",
-		layout: "layout/auth",
-		marketZones,
-		shopCategories,
-		messages: req.flash()
-	});
-};
-
-Controller.loginUser = async (req, res) => {
-	const { email, password } = req.body;
-
-	try {
-		const user = await db.User.findOne({ where: { email }, raw: true });
-		if (user && db.User.comparePassword(password, user)) {
-			return passport.authenticate("login-user", {
-				successRedirect: "/user",
-				failureRedirect: "/auth/user/login",
-				failureFlash: true,
-				failureMessage: "Invalid Email or password",
-			})(req, res);
-		} else {
-			req.flash('error', 'Invalid email or password');
-			return res.redirect('/auth/user/login');
-		}
-
-	} catch (error) {
-		console.error("Login error:", error);
-		req.flash('error', error.message || 'An error occurred during login');
-		return res.redirect('/auth/user/login');
- 	}
-}
-
-Controller.loginMerchant = async (req, res) => {
-	console.log("Login merchant request", req.body);
-	const { email, password } = req.body;
-	try {
-		const merchant = await db.Merchant.findOne({ where: { email }, raw: true });
-		if (merchant && db.Merchant.comparePassword(password, merchant)) {
-			return passport.authenticate("login-merchant", {
-				successRedirect: "/merchant",
-				failureRedirect: "/auth/merchant/login",
-				failureFlash: true,
-				failureMessage: "Invalid Email or password",
-			})(req, res);
-		} else {
-			req.flash('error', 'Invalid email or password');
-			return res.redirect('/auth/merchant/login');
-		}
-
-	} catch (error) {
-		console.error("Login error:", error);
-		req.flash('error', error.message || 'An error occurred during login');
-		return res.redirect('/auth/merchant/login');
- 	}
-}
-
-Controller.registerUser = async (req, res) => {
-	try {
-		const existingUser = await db.User.findOne({ where: { email: req.body.email } });
-		if (existingUser) {
-			return res.render('auth/register', {
-				error: 'A user with this email already exists',
-				layout: 'layout/auth'
-			});
-		}
-
-		if (req.body.password !== req.body.confirmPassword) {
-			return res.render('auth/register', {
-				error: 'Passwords do not match',
-				layout: 'layout/auth'
-			});
-		}
-
-		const userData = {
-			email: req.body.email,
-			firstName: req.body.firstName,
-			lastName: req.body.lastName,
-			password: req.body.password,
- 			fullName: `${req.body.firstName} ${req.body.lastName}`,
-			type: 'user'
-		}
-
-		const user = await db.User.create(userData);
-		console.log("User created", user);
-		req.flash('success', 'User registered successfully');
-		res.redirect('/auth/user/login');
-	} catch (error) {
-		console.error("Error registering user:", error);
-		res.render('auth/register', {
-			error: error.message || 'An error occurred during registration',
-			layout: 'layout/auth'
-		});
-	}
-}
-
-Controller.registerMerchant = async (req, res) => {
-	try {
-		const marketZones = await db.MarketZones.findAll({ raw: true });
-		const shopCategories = await db.MerchantShopCategory.findAll({ raw: true });
-		console.log("Register merchant request", req.body);
-		const { email, password, username, confirmPassword, type } = req.body;
-		
-		const existingMerchant = await db.Merchant.findOne({ where: { email } });
-		if (existingMerchant) {
-			req.flash('error', 'A merchant with this email already exists');
-			return res.redirect('/auth/merchant/register');
-		}
-		if (password !== confirmPassword) {
-			return res.render('auth/merchant-register', {
-				error: 'Passwords do not match',
-				layout: 'layout/auth',
-				marketZones,
-				shopCategories
-			});
-		}
-
-		const merchantData = {
-			email: req.body.email,
-			password: req.body.password,
-			shopName: req.body.shopName,
-			phoneNumber: req.body.phoneNumber,
-			firstName:req.body.firstName,
-			lastName:req.body.lastName,
-			fullName: `${req.body.firstName} ${req.body.lastName}`,
-			dateOfBirth: req.body.dateOfBirth,
-			type: 'merchant'
-		}
-		const merchant = await db.Merchant.create(merchantData);
-        const merchantShopData = {
-			uuid: uuidv4(),
-			shopName: req.body.shopName,
-			description: req.body.description,
-			zoneUuid: req.body.zoneUuid,
-			merchantUuid: merchant.uuid,
-		}
-        const merchantShop = await db.MerchantShop.create(merchantShopData);
-		
-		console.log("Merchant created", merchant);
-		console.log("Merchant shop created", merchantShop);
-		req.flash('success', 'Merchant registered successfully');
-		res.redirect('/auth/merchant/login');
-	} catch (error) {
-		console.error("Error registering merchant:", error);
-		req.flash('error', error.message || 'An error occurred during registration');
-		return res.redirect('/auth/merchant/register');
-	}
-}
-
-
-Controller.forgotPasswordMerchant = async (req, res) => {
-	try {
-		const { email } = req.body;
-		const merchant = await db.Merchant.findOne({ where: { email } });
-
-		if (!merchant) {
-			req.flash('error', 'No account with that email address exists.');
-			return res.redirect('/auth/merchant/forgot-password');
-		}
-
-		// Generate reset token
-		const resetToken = crypto.randomBytes(20).toString('hex');
-		const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
-
-		await merchant.update({
-			resetPasswordToken: resetToken,
-			resetPasswordExpires: resetTokenExpiry
-		});
-
-		// Send email
-		const resetUrl = `http://${req.headers.host}/auth/merchant/reset-password/${resetToken}`;
-		const message = `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
-			Please click on the following link, or paste this into your browser to complete the process:\n\n
-			${resetUrl}\n\n
-			If you did not request this, please ignore this email and your password will remain unchanged.`;
-
-		await sendEmail({
-			email: merchant.email,
-			subject: 'Password Reset',
-			message
-		});
-
-		req.flash('success', 'An e-mail has been sent to ' + merchant.email + ' with further instructions.');
-		res.redirect('/auth/merchant/login');
-	} catch (error) {
-		console.error('Error in forgot password:', error);
-		req.flash('error', 'An error occurred. Please try again.');
-		res.redirect('/auth/merchant/forgot-password');
-	}
-};
-
-Controller.getLogout = (req, res) => {
-	req.logout();
-	res.redirect("/"); // ADD rota depois do logout
-};
-
-Controller.forgotPasswordFormMerchant = (req, res) => {
-	res.render('page/merchant-forgotpassword', { layout: 'layout/auth' });
-};
-
-Controller.forgotPasswordUser = async (req, res) => {
-	try {
-		const { email } = req.body;
-		const user = await User.findOne({ where: { email } });
-
-		if (!user) {
-			req.flash('error', 'No account with that email address exists.');
-			return res.redirect('/auth/user/forgot-password');
-		}
-
-		// Generate reset token
-		const resetToken = crypto.randomBytes(20).toString('hex');
-		const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
-
-		await user.update({
-			resetPasswordToken: resetToken,
-			resetPasswordExpires: resetTokenExpiry
-		});
-
-		// Send email
-		const resetUrl = `http://${req.headers.host}/auth/user/reset-password/${resetToken}`;
-		const message = `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
-			Please click on the following link, or paste this into your browser to complete the process:\n\n
-			${resetUrl}\n\n
-			If you did not request this, please ignore this email and your password will remain unchanged.`;
-
-		await sendEmail({
-			email: user.email,
-			subject: 'Password Reset',
-			message
-		});
-
-		req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-		res.redirect('/auth/user/login');
-	} catch (error) {
-		console.error('Error in forgot password:', error);
-		req.flash('error', 'An error occurred. Please try again.');
-		res.redirect('/auth/user/forgot-password');
-	}
-};
-
-Controller.forgotPasswordFormUser = (req, res) => {
-	res.render('auth/user-forgotpassword', {
-		title: "Forgot Password",
-		layout: 'layout/auth'
-	});
-};
-
-Controller.resetPasswordFormUser = async (req, res) => {
-    const { token } = req.params;
-    res.render('auth/user-resetpassword', {
-        title: "Reset Password",
-        layout: 'layout/auth',
-        token
-    });
-};
-
-Controller.resetPasswordUser = async (req, res) => {
-    try {
-        const { token, password, confirmPassword } = req.body;
-
-        if (password !== confirmPassword) {
-            req.flash('error', 'Passwords do not match');
-            return res.redirect(`/auth/user/reset-password/${token}`);
-        }
-
-        const user = await User.findOne({
-            where: {
-                resetPasswordToken: token,
-                resetPasswordExpires: { [db.Sequelize.Op.gt]: Date.now() }
+    async loginUser(req, res, next) {
+        passport.authenticate('login-user', (err, user, info) => {
+            if (err) {
+                logger.error('Login error:', err);
+                return next(err);
             }
-        });
+            if (!user) {
+                req.flash('error', info.message);
+                return res.redirect('/auth/user/login');
+            }
+            req.logIn(user, (err) => {
+                if (err) {
+                    logger.error('Login error:', err);
+                    return next(err);
+                }
+                return res.redirect('/user');
+            });
+        })(req, res, next);
+    },
 
-        if (!user) {
-            req.flash('error', 'Password reset token is invalid or has expired');
-            return res.redirect('/auth/user/forgot-password');
+    // User Registration
+    getUserRegister(req, res) {
+        res.render('auth/register', {
+            title: 'Register',
+            layout: 'layout/auth',
+            data: { error: null }
+        });
+    },
+
+    async registerUser(req, res) {
+        try {
+            const { email, password, confirmPassword, firstName, lastName } = req.body;
+            
+            if (password !== confirmPassword) {
+                req.flash('error', 'Passwords do not match');
+                return res.redirect('/auth/user/register');
+            }
+
+            const existingUser = await db.User.findOne({ where: { email } });
+            if (existingUser) {
+                req.flash('error', 'Email already registered');
+                return res.redirect('/auth/user/register');
+            }
+
+            const user = await db.User.create({
+                uuid: uuidv4(),
+                email,
+                password,
+                firstName,
+                lastName,
+                fullName: `${firstName} ${lastName}`,
+                type: 'user'
+            });
+
+            logger.info(`User registered successfully: ${user.uuid}`);
+            req.flash('success', 'Registration successful. Please login.');
+            res.redirect('/auth/user/login');
+        } catch (error) {
+            logger.error('Registration error:', error);
+            req.flash('error', 'Registration failed');
+            res.redirect('/auth/user/register');
         }
+    },
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await user.update({
-            password: hashedPassword,
-            resetPasswordToken: null,
-            resetPasswordExpires: null
+    // Merchant Login
+    getMerchantLogin(req, res) {
+        res.render('auth/merchant-login', {
+            title: 'Merchant Login',
+            layout: 'layout/auth'
         });
+    },
 
-        req.flash('success', 'Your password has been updated');
-        res.redirect('/auth/user/login');
-    } catch (error) {
-        console.error('Error resetting user password:', error);
-        req.flash('error', 'An error occurred while resetting your password');
-        res.redirect('/auth/user/forgot-password');
+    async loginMerchant(req, res, next) {
+        passport.authenticate('login-merchant', (err, merchant, info) => {
+            if (err) {
+                logger.error('Merchant login error:', err);
+                return next(err);
+            }
+            if (!merchant) {
+                req.flash('error', info.message);
+                return res.redirect('/auth/merchant/login');
+            }
+            req.logIn(merchant, (err) => {
+                if (err) {
+                    logger.error('Merchant login error:', err);
+                    return next(err);
+                }
+                return res.redirect('/merchant');
+            });
+        })(req, res, next);
+    },
+
+    // Merchant Registration
+    getMerchantRegister(req, res) {
+        res.render('auth/merchant-register', {
+            title: 'Merchant Registration',
+            layout: 'layout/auth'
+        });
+    },
+
+    async registerMerchant(req, res) {
+        try {
+            logger.info("Register merchant request", req.body);
+            const { email, password, confirmPassword, firstName, lastName, description, phoneNumber, dateOfBirth } = req.body;
+            
+            const existingMerchant = await db.Merchant.findOne({ where: { email } });
+            if (existingMerchant) {
+                req.flash('error', 'A merchant with this email already exists');
+                return res.redirect('/auth/merchant/register');
+            }
+
+            if (password !== confirmPassword) {
+                req.flash('error', 'Passwords do not match');
+                return res.redirect('/auth/merchant/register');
+            }
+
+            const merchant = await db.Merchant.create({
+                uuid: uuidv4(),
+                email,
+                password,
+                firstName,
+                lastName,
+                fullName: `${firstName} ${lastName}`,
+                description,
+                phoneNumber,
+                dateOfBirth,
+                type: 'merchant'
+            });
+            
+            logger.info("Merchant created", merchant);
+            req.flash('success', 'Merchant registered successfully');
+            res.redirect('/auth/merchant/login');
+        } catch (error) {
+            logger.error("Error registering merchant:", error);
+            req.flash('error', error.message || 'An error occurred during registration');
+            return res.redirect('/auth/merchant/register');
+        }
+    },
+
+    // Password Reset
+    forgotPasswordFormUser(req, res) {
+        res.render('auth/user-forgotpassword', {
+            title: 'Forgot Password',
+            layout: 'layout/auth'
+        });
+    },
+
+    async forgotPasswordUser(req, res) {
+        try {
+            const { email } = req.body;
+            const user = await db.User.findOne({ where: { email } });
+            
+            if (!user) {
+                req.flash('error', 'No account found with that email');
+                return res.redirect('/auth/user/forgot-password');
+            }
+
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+            user.resetPasswordToken = resetToken;
+            user.resetPasswordExpires = resetTokenExpiry;
+            await user.save();
+
+            const resetUrl = `${req.protocol}://${req.get('host')}/auth/user/reset-password/${resetToken}`;
+            await sendEmail({
+                email: user.email,
+                subject: 'Password Reset',
+                message: `You requested a password reset. Click here to reset your password: ${resetUrl}`
+            });
+
+            req.flash('success', 'Password reset email sent');
+            res.redirect('/auth/user/login');
+        } catch (error) {
+            logger.error('Password reset error:', error);
+            req.flash('error', 'Error sending password reset email');
+            res.redirect('/auth/user/forgot-password');
+        }
+    },
+
+    forgotPasswordFormMerchant(req, res) {
+        res.render('auth/merchant-forgotpassword', {
+            title: 'Forgot Password',
+            layout: 'layout/auth'
+        });
+    },
+
+    async forgotPasswordMerchant(req, res) {
+        try {
+            const { email } = req.body;
+            const merchant = await db.Merchant.findOne({ where: { email } });
+            
+            if (!merchant) {
+                req.flash('error', 'No merchant account found with that email');
+                return res.redirect('/auth/merchant/forgot-password');
+            }
+
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+            merchant.resetPasswordToken = resetToken;
+            merchant.resetPasswordExpires = resetTokenExpiry;
+            await merchant.save();
+
+            const resetUrl = `${req.protocol}://${req.get('host')}/auth/merchant/reset-password/${resetToken}`;
+            await sendEmail({
+                email: merchant.email,
+                subject: 'Password Reset',
+                message: `You requested a password reset. Click here to reset your password: ${resetUrl}`
+            });
+
+            req.flash('success', 'Password reset email sent');
+            res.redirect('/auth/merchant/login');
+        } catch (error) {
+            logger.error('Merchant password reset error:', error);
+            req.flash('error', 'Error sending password reset email');
+            res.redirect('/auth/merchant/forgot-password');
+        }
+    },
+
+    resetPasswordFormUser(req, res) {
+        res.render('auth/user-resetpassword', {
+            title: 'Reset Password',
+            layout: 'layout/auth',
+            token: req.params.token
+        });
+    },
+
+    async resetPasswordUser(req, res) {
+        try {
+            const { password, confirmPassword } = req.body;
+            const { token } = req.body;
+
+            if (password !== confirmPassword) {
+                req.flash('error', 'Passwords do not match');
+                return res.redirect(`/auth/user/reset-password/${token}`);
+            }
+
+            const user = await db.User.findOne({
+                where: {
+                    resetPasswordToken: token,
+                    resetPasswordExpires: { [db.Sequelize.Op.gt]: Date.now() }
+                }
+            });
+
+            if (!user) {
+                req.flash('error', 'Password reset token is invalid or has expired');
+                return res.redirect('/auth/user/forgot-password');
+            }
+
+            user.password = await bcrypt.hash(password, 10);
+            user.resetPasswordToken = null;
+            user.resetPasswordExpires = null;
+            await user.save();
+
+            req.flash('success', 'Password has been reset');
+            res.redirect('/auth/user/login');
+        } catch (error) {
+            logger.error('Password reset error:', error);
+            req.flash('error', 'Error resetting password');
+            res.redirect('/auth/user/forgot-password');
+        }
+    },
+
+    resetPasswordFormMerchant(req, res) {
+        res.render('auth/merchant-resetpassword', {
+            title: 'Reset Password',
+            layout: 'layout/auth',
+            token: req.params.token
+        });
+    },
+
+    async resetPasswordMerchant(req, res) {
+        try {
+            const { password, confirmPassword } = req.body;
+            const { token } = req.body;
+
+            if (password !== confirmPassword) {
+                req.flash('error', 'Passwords do not match');
+                return res.redirect(`/auth/merchant/reset-password/${token}`);
+            }
+
+            const merchant = await db.Merchant.findOne({
+                where: {
+                    resetPasswordToken: token,
+                    resetPasswordExpires: { [db.Sequelize.Op.gt]: Date.now() }
+                }
+            });
+
+            if (!merchant) {
+                req.flash('error', 'Password reset token is invalid or has expired');
+                return res.redirect('/auth/merchant/forgot-password');
+            }
+
+            merchant.password = await bcrypt.hash(password, 10);
+            merchant.resetPasswordToken = null;
+            merchant.resetPasswordExpires = null;
+            await merchant.save();
+
+            req.flash('success', 'Password has been reset');
+            res.redirect('/auth/merchant/login');
+        } catch (error) {
+            logger.error('Merchant password reset error:', error);
+            req.flash('error', 'Error resetting password');
+            res.redirect('/auth/merchant/forgot-password');
+        }
+    },
+
+    // Logout
+    getLogout(req, res) {
+        req.logout();
+        res.redirect('/');
     }
 };
-
-Controller.resetPasswordFormMerchant = async (req, res) => {
-    const { token } = req.params;
-    res.render('auth/merchant-resetpassword', {
-        title: "Reset Merchant Password",
-        layout: 'layout/auth',
-        token
-    });
-};
-
-Controller.resetPasswordMerchant = async (req, res) => {
-    try {
-        const { token, password, confirmPassword } = req.body;
-
-        if (password !== confirmPassword) {
-            req.flash('error', 'Passwords do not match');
-            return res.redirect(`/auth/merchant/reset-password/${token}`);
-        }
-
-        const merchant = await db.Merchant.findOne({
-            where: {
-                resetPasswordToken: token,
-                resetPasswordExpires: { [db.Sequelize.Op.gt]: Date.now() }
-            }
-        });
-
-        if (!merchant) {
-            req.flash('error', 'Password reset token is invalid or has expired');
-            return res.redirect('/auth/merchant/forgot-password');
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await merchant.update({
-            password: hashedPassword,
-            resetPasswordToken: null,
-            resetPasswordExpires: null
-        });
-
-        req.flash('success', 'Your password has been updated');
-        res.redirect('/auth/merchant/login');
-    } catch (error) {
-        console.error('Error resetting merchant password:', error);
-        req.flash('error', 'An error occurred while resetting your password');
-        res.redirect('/auth/merchant/forgot-password');
-    }
-};
-
 
 module.exports = Controller;

@@ -1,7 +1,6 @@
 const db = require("../../models");
-const { MerchantShop } = db;
-const { v4: uuidv4 } = require("uuid");
 const logger = require("../../logger");
+const { v4: uuidv4 } = require("uuid");
 
 const MerchantShopController = {
     async getShops(req, res) {
@@ -13,7 +12,7 @@ const MerchantShopController = {
                 where: { merchantUuid: merchantId },
                 include: [
                     {
-                        model: db.MarketZones,
+                        model: db.MarketZone,
                         attributes: ['name']
                     },
                     {
@@ -24,10 +23,43 @@ const MerchantShopController = {
                 order: [['createdAt', 'DESC']]
             });
 
+            // Calculate additional stats for each shop
+            const shopsWithStats = await Promise.all(shops.map(async (shop) => {
+                const shopData = shop.get({ plain: true });
+
+                // Get products count
+                const productsCount = await db.Product.count({
+                    where: { merchantShopUuid: shop.uuid }
+                });
+
+                // Get orders count
+                const ordersCount = await db.OrderItem.count({
+                    include: [{
+                        model: db.Product,
+                        where: { merchantShopUuid: shop.uuid }
+                    }]
+                });
+
+                // Calculate revenue
+                const revenue = await db.OrderItem.sum('price', {
+                    include: [{
+                        model: db.Product,
+                        where: { merchantShopUuid: shop.uuid }
+                    }]
+                });
+
+                return {
+                    ...shopData,
+                    productsCount: productsCount || 0,
+                    ordersCount: ordersCount || 0,
+                    revenue: revenue || 0
+                };
+            }));
+
             res.render("page/merchant/shops", {
                 title: "My Shops",
                 layout: "layout/merchant-account",
-                shops,
+                shops: shopsWithStats,
                 user: req.user
             });
         } catch (error) {
@@ -43,11 +75,14 @@ const MerchantShopController = {
     async createShop(req, res) {
         try {
             const merchantId = req.user.uuid;
-            logger.info(`Creating shop for merchant: ${merchantId}`);
+            logger.info(`Creating shop for merchant req.body: >>`);
+
+             logger.info(`Creating shop for merchant: ${merchantId}`);
 
             // Validate input
             const { shopName, description, zoneUuid, merchantShopCategoryUuid } = req.body;
-            
+
+            // Validate required fields
             if (!shopName || !description || !zoneUuid || !merchantShopCategoryUuid) {
                 return res.status(400).json({
                     status: "error",
@@ -55,8 +90,21 @@ const MerchantShopController = {
                 });
             }
 
+            // Validate foreign keys exist
+            const [zone, category] = await Promise.all([
+                db.MarketZone.findOne({ where: { zoneUuid } }),
+                db.MerchantShopCategory.findOne({ where: { uuid: merchantShopCategoryUuid } })
+            ]);
+
+            if (!zone || !category) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Invalid zone or category"
+                });
+            }
+
             // Check for existing shop with same name
-            const existingShop = await MerchantShop.findOne({ 
+            const existingShop = await db.MerchantShop.findOne({
                 where: { shopName }
             });
 
@@ -97,7 +145,7 @@ const MerchantShopController = {
     async renderCreateShop(req, res) {
         try {
             // Get zones and categories
-            const zones = await db.MarketZones.findAll();
+            const zones = await db.MarketZone.findAll();
             const categories = await db.MerchantShopCategory.findAll();
 
             res.render("page/merchant/create-shop", {

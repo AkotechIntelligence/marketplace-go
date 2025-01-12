@@ -6,93 +6,68 @@
 <div class="account-stats">
     <div class="stat-card">
         <i class="fas fa-store stat-icon"></i>
-        <div class="stat-value">5</div>
+        <div class="stat-value"><%= shops.length %></div>
         <div class="stat-label">Active Shops</div>
     </div>
     <div class="stat-card">
-        <i class="fas fa-box stat-icon"></i>
-        <div class="stat-value">24</div>
-        <div class="stat-label">Products</div>
-    </div>
-    <div class="stat-card">
         <i class="fas fa-shopping-bag stat-icon"></i>
-        <div class="stat-value">12</div>
-        <div class="stat-label">Orders</div>
+        <div class="stat-value"><%= recentOrders.length %></div>
+        <div class="stat-label">Recent Orders</div>
     </div>
     <div class="stat-card">
         <i class="fas fa-dollar-sign stat-icon"></i>
-        <div class="stat-value">$1,234</div>
-        <div class="stat-label">Revenue</div>
+        <div class="stat-value">$<%= shops.reduce((total, shop) => total + (shop.revenue || 0), 0).toFixed(2) %></div>
+        <div class="stat-label">Total Revenue</div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="account-card">
-            <div class="account-card-header">
-                <h5 class="account-card-title">Recent Orders</h5>
-                <a href="/merchant/orders" class="btn btn-sm btn-outline-primary">View All</a>
-            </div>
-            <div class="table-responsive">
-                <table class="account-table">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#12345</td>
-                            <td>2024-01-15</td>
-                            <td><span class="badge badge-success">Completed</span></td>
-                            <td>$99.99</td>
-                        </tr>
-                        <tr>
-                            <td>#12344</td>
-                            <td>2024-01-14</td>
-                            <td><span class="badge badge-warning">Processing</span></td>
-                            <td>$149.99</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="account-card">
+    <div class="account-card-header">
+        <h5 class="account-card-title">Recent Orders</h5>
+        <a href="/merchant/orders" class="btn btn-sm btn-outline-primary">View All</a>
     </div>
-    <div class="col-md-6">
-        <div class="account-card">
-            <div class="account-card-header">
-                <h5 class="account-card-title">Recent Products</h5>
-                <a href="/merchant/products" class="btn btn-sm btn-outline-primary">View All</a>
-            </div>
-            <div class="table-responsive">
-                <table class="account-table">
-                    <thead>
+    <div class="table-responsive">
+        <table class="account-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (recentOrders && recentOrders.length > 0) { %>
+                    <% recentOrders.forEach(order => { %>
                         <tr>
-                            <th>Product</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th>Status</th>
+                            <td>#<%= order.uuid %></td>
+                            <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                            <td><%= order.userUuid %></td>
+                            <td>$<%= order.total %></td>
+                            <td>
+                                <span class="badge badge-<%= 
+                                    order.status === 'completed' ? 'success' : 
+                                    order.status === 'processing' ? 'warning' : 
+                                    'secondary' 
+                                %>">
+                                    <%= order.status %>
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/merchant/orders/<%= order.uuid %>" class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Product 1</td>
-                            <td>$99.99</td>
-                            <td>15</td>
-                            <td><span class="badge badge-success">Active</span></td>
-                        </tr>
-                        <tr>
-                            <td>Product 2</td>
-                            <td>$149.99</td>
-                            <td>8</td>
-                            <td><span class="badge badge-success">Active</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6" class="text-center">No recent orders</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
     </div>
 </div>

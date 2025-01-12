@@ -37,10 +37,15 @@ const MerchantController = {
             // Get recent orders
             const recentOrders = await db.Order.findAll({
                 include: [{
-                    model: db.Product,
+                    model: db.OrderItem,
+                    as: 'orderItems',
                     include: [{
-                        model: db.MerchantShop,
-                        where: { merchantUuid: merchantId }
+                        model: db.Product,
+                        as: 'product',
+                        include: [{
+                            model: db.MerchantShop,
+                            where: { merchantUuid: merchantId }
+                        }]
                     }]
                 }],
                 limit: 5,
@@ -105,7 +110,8 @@ const MerchantController = {
                 email,
                 password,
                 phoneNumber,
-                dateOfBirth
+                dateOfBirth,
+                description
             } = req.body;
 
             // Check if merchant already exists
@@ -132,6 +138,7 @@ const MerchantController = {
                 password,
                 phoneNumber,
                 dateOfBirth,
+                description,
                 imageUrl: req.file ? req.file.filename : null
             });
 
@@ -169,7 +176,8 @@ const MerchantController = {
                 fullName: `${req.body.firstName} ${req.body.lastName}`,
                 email: req.body.email,
                 phoneNumber: req.body.phoneNumber,
-                dateOfBirth: req.body.dateOfBirth
+                dateOfBirth: req.body.dateOfBirth,
+                description: req.body.description
             };
 
             // Update password if provided
