@@ -38,17 +38,25 @@ if(app.get('env') === 'development') {
 	}));
 
 }else if(app.get('env') === 'production') {
-	app.use(
-		session({
-			secret: config.jwt_secret,
-			resave: false,
-			saveUninitialized: false,
-			store: new SequelizeStore({
-				db: db.sequelize,
-				tableName: "sessions", // Name of the table to store sessions
-			}),
-		})
-	);
+
+
+app.use(session({
+		secret: config.jwt_secret,
+		resave: false,
+		saveUninitialized: false
+	}));
+  
+	// app.use(
+	// 	session({
+	// 		secret: config.jwt_secret,
+	// 		resave: false,
+	// 		saveUninitialized: false,
+	// 		store: new SequelizeStore({
+	// 			db: db.sequelize,
+	// 			tableName: "sessions", // Name of the table to store sessions
+	// 		}),
+	// 	})
+	// );
 }
 
 app.use(flash());
