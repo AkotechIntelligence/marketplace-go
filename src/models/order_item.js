@@ -6,10 +6,12 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             OrderItem.belongsTo(models.Order, {
                 foreignKey: 'orderUuid',
+                targetKey: 'uuid',
                 as: 'order'
             });
             OrderItem.belongsTo(models.Product, {
                 foreignKey: 'productUuid',
+                targetKey: 'uuid',
                 as: 'product'
             });
         }
@@ -17,12 +19,12 @@ module.exports = (sequelize, DataTypes) => {
 
     OrderItem.init({
         uuid: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true
+            type: DataTypes.STRING,
+            primaryKey: true,
+            allowNull: false
         },
         orderUuid: {
-            type: DataTypes.UUID,
+            type: DataTypes.STRING,
             allowNull: false,
             references: {
                 model: 'Order',
@@ -30,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         productUuid: {
-            type: DataTypes.UUID,
+            type: DataTypes.STRING,
             allowNull: false,
             references: {
                 model: 'Product',

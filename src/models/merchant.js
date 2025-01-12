@@ -5,7 +5,6 @@ const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
     class Merchant extends Model {
         static associate(models) {
-            // Define associations
             Merchant.hasMany(models.MerchantShop, {
                 foreignKey: 'merchantUuid',
                 sourceKey: 'uuid'
@@ -15,17 +14,13 @@ module.exports = (sequelize, DataTypes) => {
                 as: 'orders'
             });
         }
-
-        static async comparePassword(password, merchant) {
-            return await bcrypt.compare(password, merchant.password);
-        }
     }
 
     Merchant.init({
         uuid: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true
+            type: DataTypes.STRING,
+            primaryKey: true,
+            allowNull: false
         },
         firstName: {
             type: DataTypes.STRING,
@@ -81,7 +76,6 @@ module.exports = (sequelize, DataTypes) => {
         tableName: "Merchant"
     });
 
-    // Hash password before saving
     Merchant.beforeCreate(async (merchant) => {
         merchant.password = await bcrypt.hash(merchant.password, 10);
     });
