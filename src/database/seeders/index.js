@@ -3,67 +3,65 @@ const MerchantShopData = require("./merchantshop");
 const MarketShopCategoryData = require("./categories");
 const MerchantData = require("./merchant");
 const db = require("../../models");
-const uuidv4 = require("uuid").v4;
-
-const { MarketZones, MerchantShop, MerchantShopCategory, Merchant } = db;
+const logger = require("../../logger");
 
 async function populateMarketZones() {
-	const existingZones = await db.MarketZones.findAll({});
-
+	const existingZones = await db.MarketZone.findAll({});
 	if (existingZones.length > 0) return;
-
-	console.log("MarketZonesData", Zones);
-	await db.MarketZones.bulkCreate(Zones);
+	logger.info("Populating market zones...");
+	await db.MarketZone.bulkCreate(Zones);
 	return Zones;
 }
 
 async function populateMerchant() {
-	const existingZones =  await db.Merchant.findAll({});
-	if (existingZones.length > 0) return;
-
-	await db.Merchant.bulkCreate(MerchantData, { returning: true });
-	//await Merchant.create(MerchantData, { returning: true });
-}
-
-async function populateMerchantShop() {
-	const existingMerchant = await db.MerchantShop.findAll({ raw: true });
-	if (existingMerchant.length > 0) return;
-	console.log("MerchantShopData>>", MerchantShopData);
-	const data = await populateMarketZones();
-
-	console.log("MerchantZones>>", data);
-
-	if (data) {
-		await db.MerchantShop.bulkCreate(
-			[
-				{
-					uuid: data[0].uuid,
-					zoneUuid: data[0].zoneUuid,
-					shopName: "Valtrine Shop",
-					merchantUuid: MerchantData[0].uuid,
-					shopCategoryUuid: MarketShopCategoryData[0].uuid,
-				},
-			],
-			{ returning: true }
-		);
-	}
+	const existingMerchants = await db.Merchant.findAll({});
+	if (existingMerchants.length > 0) return existingMerchants;
+	logger.info("Populating merchants...");
+	const merchants = await db.Merchant.bulkCreate(MerchantData);
+	return merchants;
 }
 
 async function populateMerchantShopCategory() {
-	const existingMerchantShopcategories = await db.MerchantShopCategory.findAll();
-	if (existingMerchantShopcategories.length > 0) return;
+	const existingCategories = await db.MerchantShopCategory.findAll();
+	if (existingCategories.length > 0) return;
+	logger.info("Populating merchant shop categories...");
+	await db.MerchantShopCategory.bulkCreate(MarketShopCategoryData);
+}
 
-	console.log("MarketShopCategoryData", MarketShopCategoryData);
-	await db.MerchantShopCategory.bulkCreate(MarketShopCategoryData, {
-		returning: true,
-	});
+async function populateMerchantShop() {
+	const existingShops = await db.MerchantShop.findAll({ raw: true });
+	if (existingShops.length > 0) return;
+
+	logger.info("Populating merchant shops...");
+	const zones = await populateMarketZones();
+	const merchants = await populateMerchant();
+
+	if (zones && merchants && merchants.length > 0) {
+		await db.MerchantShop.bulkCreate([
+			{
+				uuid: uuidv4(),
+				shopName: "Valtrine Shop",
+				description: "First shop",
+				zoneUuid: zones[0].zoneUuid,
+				merchantUuid: merchants[0].uuid,
+				merchantShopCategoryUuid: MarketShopCategoryData[0].uuid
+			}
+		]);
+	}
 }
 
 async function seedData() {
-	await populateMerchantShop();
-	// populateMarketZones();
-	await populateMerchant();
-	await populateMerchantShopCategory();
+	try {
+		logger.info("Starting data seeding...");
+		await populateMarketZones();
+		await populateMerchant();
+		await populateMerchantShopCategory();
+		await populateMerchantShop();
+		logger.info("Data seeding completed successfully");
+	} catch (error) {
+		logger.error("Error seeding data:", error);
+		throw error;
+	}
 }
 
 module.exports = {

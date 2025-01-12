@@ -10,7 +10,11 @@ module.exports = (sequelize, DataTypes) => {
 		data: {
 			type: DataTypes.TEXT,
 		},
-	});
+	},{
+        sequelize,
+        modelName: 'Session',
+        tableName: 'Session'
+    });
 
 	return Session;
 };

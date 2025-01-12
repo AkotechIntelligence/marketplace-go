@@ -1,16 +1,15 @@
-const uuidv4 = require("uuid").v4;
+const { v4: uuidv4 } = require("uuid");
 
-const Merchant = require("./merchant");
-const Zone = require("./zones");
-const MarketShopCategoryData = require("./categories");
-
+// We'll get the actual merchant UUID at runtime instead of hardcoding it
 const MerchantShop = [
 	{
 		uuid: uuidv4(),
-		zoneUuid: Zone[0].zoneUuid,
 		shopName: "Valtrine Shop",
-		merchantUuid: Merchant[0].uuid,
-		merchantShopCategoryUuid: MarketShopCategoryData[0].uuid,
+		description: "First shop in the marketplace",
+		// These will be populated at runtime
+		zoneUuid: null,
+		merchantUuid: null,
+		merchantShopCategoryUuid: null
 	},
 ];
 

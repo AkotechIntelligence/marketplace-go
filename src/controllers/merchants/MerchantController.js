@@ -105,7 +105,8 @@ const MerchantController = {
                 email,
                 password,
                 phoneNumber,
-                dateOfBirth
+                dateOfBirth,
+                description
             } = req.body;
 
             // Check if merchant already exists
@@ -132,6 +133,7 @@ const MerchantController = {
                 password,
                 phoneNumber,
                 dateOfBirth,
+                description,
                 imageUrl: req.file ? req.file.filename : null
             });
 
@@ -169,7 +171,8 @@ const MerchantController = {
                 fullName: `${req.body.firstName} ${req.body.lastName}`,
                 email: req.body.email,
                 phoneNumber: req.body.phoneNumber,
-                dateOfBirth: req.body.dateOfBirth
+                dateOfBirth: req.body.dateOfBirth,
+                description: req.body.description
             };
 
             // Update password if provided
