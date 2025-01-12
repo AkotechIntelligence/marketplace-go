@@ -14,7 +14,7 @@ const currencies = [
     uuid: uuidv4(),
     code: 'GHS',
     country: 'Ghana',
-    dollarExchangeRate: 15.15, // Example rate, should be updated to current rate
+    dollarExchangeRate: 12.5000, // Current approximate rate
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date()

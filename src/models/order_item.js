@@ -12,7 +12,6 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'productUuid',
                 as: 'product'
             });
-            
         }
     }
 
@@ -55,7 +54,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(3),
             allowNull: false,
             defaultValue: 'GHS'
-            
         },
         orderDetail: {
             type: DataTypes.JSONB,
