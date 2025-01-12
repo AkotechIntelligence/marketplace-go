@@ -4,17 +4,19 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Order extends Model {
         static associate(models) {
-            // Define associations
             Order.belongsTo(models.User, {
                 foreignKey: 'userUuid',
+                targetKey: 'uuid',
                 as: 'user'
             });
             Order.belongsTo(models.Merchant, {
                 foreignKey: 'merchantUuid',
+                targetKey: 'uuid',
                 as: 'merchant'
             });
             Order.hasMany(models.OrderItem, {
                 foreignKey: 'orderUuid',
+                sourceKey: 'uuid',
                 as: 'orderItems'
             });
         }
@@ -22,12 +24,12 @@ module.exports = (sequelize, DataTypes) => {
 
     Order.init({
         uuid: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true
+            type: DataTypes.STRING,
+            primaryKey: true,
+            allowNull: false
         },
         userUuid: {
-            type: DataTypes.UUID,
+            type: DataTypes.STRING,
             allowNull: false,
             references: {
                 model: 'User',
@@ -35,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         merchantUuid: {
-            type: DataTypes.UUID,
+            type: DataTypes.STRING,
             allowNull: false,
             references: {
                 model: 'Merchant',
@@ -63,6 +65,11 @@ module.exports = (sequelize, DataTypes) => {
         },
         notes: {
             type: DataTypes.TEXT
+        },
+        currencyCode: {
+            type: DataTypes.STRING(3),
+            allowNull: false,
+            defaultValue: 'GHS'
         }
     }, {
         sequelize,
