@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-PROJECT_FOLDER=/var/www/marketplaceapp
+PROJECT_FOLDER=/var/www/marketplacego
 cd ${PROJECT_FOLDER}
 echo "Starting Deployment"
 if command -v pm2 ; then
