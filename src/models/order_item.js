@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'productUuid',
                 as: 'product'
             });
+            
         }
     }
 
@@ -25,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.UUID,
             allowNull: false,
             references: {
-                model: 'orders',
+                model: 'Order',
                 key: 'uuid'
             }
         },
@@ -33,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.UUID,
             allowNull: false,
             references: {
-                model: 'products',
+                model: 'Product',
                 key: 'uuid'
             }
         },
@@ -49,6 +50,12 @@ module.exports = (sequelize, DataTypes) => {
         subtotal: {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false
+        },
+        currencyCode: {
+            type: DataTypes.STRING(3),
+            allowNull: false,
+            defaultValue: 'GHS'
+            
         },
         orderDetail: {
             type: DataTypes.JSONB,

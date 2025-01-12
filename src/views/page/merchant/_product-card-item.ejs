@@ -1,0 +1,170 @@
+<div class="product-card">
+    <div class="product-image">
+        <% if (product.ProductImages && product.ProductImages.length > 0) { %>
+            <img src="/uploads/<%= product.ProductImages[0].imageUrl %>" 
+                 alt="<%= product.name %>" 
+                 class="product-img">
+        <% } else { %>
+            <img src="/images/product-placeholder.png" 
+                 alt="<%= product.name %>" 
+                 class="product-img">
+        <% } %>
+        <div class="product-badges">
+            <% if (product.quantity <= 0) { %>
+                <span class="badge badge-danger">Out of Stock</span>
+            <% } else if (product.quantity <= 5) { %>
+                <span class="badge badge-warning">Low Stock</span>
+            <% } %>
+        </div>
+    </div>
+    <div class="product-details">
+        <h5 class="product-name"><%= product.name %></h5>
+        <p class="product-shop">
+            <i class="fas fa-store"></i> <%= product.MerchantShop.shopName %>
+        </p>
+        <div class="product-info">
+            <div class="product-price">$<%= product.price.toFixed(2) %></div>
+            <div class="product-stock">
+                <i class="fas fa-box"></i> <%= product.quantity %> in stock
+            </div>
+        </div>
+        <div class="product-category">
+            <span class="category-badge">
+                <i class="fas fa-tag"></i> 
+                <%= product.ProductCategory ? product.ProductCategory.name : 'Uncategorized' %>
+            </span>
+        </div>
+        <div class="product-actions">
+            <a href="/merchant/product/edit/<%= product.uuid %>" 
+               class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <button type="button" 
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="deleteProduct('<%= product.uuid %>')">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+    position: relative;
+    padding-top: 75%;
+    overflow: hidden;
+}
+
+.product-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-badges {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.product-details {
+    padding: 1.25rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.product-shop {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.product-shop i {
+    color: var(--primary);
+    margin-right: 0.5rem;
+}
+
+.product-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.product-stock {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.product-stock i {
+    margin-right: 0.5rem;
+}
+
+.product-category {
+    margin-bottom: 1rem;
+}
+
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--primary);
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.category-badge i {
+    margin-right: 0.5rem;
+}
+
+.product-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.product-actions .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+</style>

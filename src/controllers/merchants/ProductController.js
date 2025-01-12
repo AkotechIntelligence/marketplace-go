@@ -1,5 +1,4 @@
 const db = require("../../models");
-const { Product, ProductImages, MerchantShop } = db;
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../../logger");
 
@@ -7,37 +6,48 @@ const ProductController = {
     async getProducts(req, res) {
         try {
             const merchantId = req.user.uuid;
-            logger.info(`Fetching products for merchant: ${merchantId}`);
+            const { shopUuid } = req.params;
+            
+            let where = {};
+            let shop = null;
 
-            // Get all merchant's shops
-            const shops = await MerchantShop.findAll({
-                where: { merchantUuid: merchantId },
-                attributes: ['uuid']
-            });
+            if (shopUuid) {
+                shop = await db.MerchantShop.findOne({ 
+                    where: { 
+                        uuid: shopUuid,
+                        merchantUuid: merchantId 
+                    }
+                });
 
-            const shopIds = shops.map(shop => shop.uuid);
+                if (!shop) {
+                    req.flash('error', 'Shop not found');
+                    return res.redirect('/merchant/products');
+                }
 
-            // Get products for all merchant's shops
-            const products = await Product.findAll({
-                where: {
-                    merchantShopUuid: shopIds
-                },
+                where.merchantShopUuid = shopUuid;
+            } else {
+                // Get all shops for this merchant
+                const shops = await db.MerchantShop.findAll({
+                    where: { merchantUuid: merchantId },
+                    attributes: ['uuid']
+                });
+                where.merchantShopUuid = shops.map(shop => shop.uuid);
+            }
+
+            const products = await db.Product.findAll({
+                where,
                 include: [
                     {
-                        model: ProductImages,
-                        attributes: ['imageUrl']
+                        model: db.ProductImage,
+                        as: 'images'
                     },
                     {
-                        model: MerchantShop,
+                        model: db.MerchantShop,
                         attributes: ['shopName']
                     },
                     {
                         model: db.ProductCategory,
-                        attributes: ['name']
-                    },
-                    {
-                        model: db.ProductSubcategory,
-                        attributes: ['name']
+                        as: 'category'
                     }
                 ],
                 order: [['createdAt', 'DESC']]
@@ -47,55 +57,89 @@ const ProductController = {
                 title: "Products",
                 layout: "layout/merchant-account",
                 products,
+                shop,
+                shopUuid,
                 user: req.user
             });
         } catch (error) {
-            logger.error(`Error fetching merchant products: ${error.message}`, { error });
-            res.render("errors/500", {
-                title: "Server Error",
-                layout: "layout/blank-layout",
-                error: error.message
+            logger.error(`Error fetching products: ${error.message}`, { error });
+            req.flash('error', 'Failed to load products');
+            res.redirect('/merchant');
+        }
+    },
+
+    async renderCreateProduct(req, res) {
+        try {
+            const merchantId = req.user.uuid;
+            const { shopUuid } = req.params;
+
+            // Get merchant's shops
+            const shops = await db.MerchantShop.findAll({
+                where: { merchantUuid: merchantId }
             });
+
+            // Get categories
+            const categories = await db.ProductCategory.findAll();
+
+            res.render("page/merchant/create-product", {
+                title: "Create Product",
+                layout: "layout/merchant-account",
+                shops,
+                categories,
+                shopUuid,
+                user: req.user
+            });
+        } catch (error) {
+            logger.error(`Error rendering create product page: ${error.message}`, { error });
+            req.flash('error', 'Failed to load product creation page');
+            res.redirect('/merchant/products');
         }
     },
 
     async createProduct(req, res) {
         try {
             const merchantId = req.user.uuid;
-            logger.info(`Creating product for merchant: ${merchantId}`);
+            const {
+                name,
+                description,
+                price,
+                quantity,
+                merchantShopUuid,
+                categoryUuid,
+                subCategoryUuid
+            } = req.body;
 
             // Validate shop ownership
-            const shop = await MerchantShop.findOne({
+            const shop = await db.MerchantShop.findOne({
                 where: { 
-                    uuid: req.body.merchantShopUuid,
+                    uuid: merchantShopUuid,
                     merchantUuid: merchantId
                 }
             });
 
             if (!shop) {
-                logger.warn(`Invalid shop access attempt by merchant: ${merchantId}`);
                 return res.status(403).json({
-                    status: "error",
+                    success: false,
                     message: "You don't have permission to add products to this shop"
                 });
             }
 
             // Create product
-            const product = await Product.create({
+            const product = await db.Product.create({
                 uuid: uuidv4(),
-                name: req.body.name,
-                description: req.body.description,
-                price: req.body.price,
-                quantity: req.body.quantity,
-                merchantShopUuid: shop.uuid,
-                categoryUuid: req.body.categoryUuid,
-                subCategoryUuid: req.body.subCategoryUuid
+                name,
+                description,
+                price,
+                quantity,
+                merchantShopUuid,
+                categoryUuid,
+                subCategoryUuid
             });
 
             // Handle product images
             if (req.files && req.files.length > 0) {
                 await Promise.all(req.files.map(file => 
-                    ProductImages.create({
+                    db.ProductImage.create({
                         uuid: uuidv4(),
                         productUuid: product.uuid,
                         imageUrl: file.filename,
@@ -104,56 +148,12 @@ const ProductController = {
                 ));
             }
 
-            logger.info(`Product created successfully: ${product.uuid}`);
-            return res.status(201).json({
-                status: "success",
-                message: "Product created successfully",
-                data: product
-            });
+            req.flash('success', 'Product created successfully');
+            res.redirect('/merchant/products');
         } catch (error) {
             logger.error(`Error creating product: ${error.message}`, { error });
-            return res.status(500).json({
-                status: "error",
-                message: "Failed to create product"
-            });
-        }
-    },
-
-    async renderCreateProduct(req, res) {
-        try {
-            const merchantId = req.user.uuid;
-            
-            // Get merchant's shops
-            const shops = await MerchantShop.findAll({
-                where: { merchantUuid: merchantId },
-                raw: true
-            });
-
-            // Get product categories
-            const categories = await db.ProductCategory.findAll({
-                raw: true
-            });
-
-            // Get market zones for filtering
-            const zones = await db.MarketZones.findAll({
-                raw: true
-            });
-            
-            res.render("page/merchant/create-product", {
-                title: "Create Product",
-                layout: "layout/merchant-account",
-                shops,
-                categories,
-                zones,
-                user: req.user
-            });
-        } catch (error) {
-            logger.error(`Error rendering create product page: ${error.message}`, { error });
-            res.render("errors/500", {
-                title: "Server Error",
-                layout: "layout/blank-layout",
-                error: error.message
-            });
+            req.flash('error', 'Failed to create product');
+            res.redirect('/merchant/products/create');
         }
     }
 };

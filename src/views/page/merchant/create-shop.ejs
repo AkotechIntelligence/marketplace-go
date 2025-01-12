@@ -7,33 +7,51 @@
     </div>
 </div>
 
+<% if (messages.error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= messages.error %>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<% } %>
+
+<% if (messages.success) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= messages.success %>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<% } %>
+
 <div class="account-card">
-    <form id="createShopForm" onsubmit="handleSubmit(event)">
+    <form action="/merchant/shops/create" method="POST" enctype="multipart/form-data">
         <div class="form-group">
-            <label for="shopName">Shop Name</label>
+            <label for="shopName">Shop Name *</label>
             <input type="text" class="form-control" id="shopName" name="shopName" required>
         </div>
 
         <div class="form-group">
-            <label for="description">Description</label>
+            <label for="description">Description *</label>
             <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
         </div>
 
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="zoneUuid">Zone</label>
+                    <label for="zoneUuid">Zone *</label>
                     <select class="form-control" id="zoneUuid" name="zoneUuid" required>
                         <option value="">Select a zone</option>
                         <% zones.forEach(zone => { %>
-                            <option value="<%= zone.uuid %>"><%= zone.name %></option>
+                            <option value="<%= zone.zoneUuid %>"><%= zone.name %></option>
                         <% }); %>
                     </select>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="merchantShopCategoryUuid">Shop Category</label>
+                    <label for="merchantShopCategoryUuid">Shop Category *</label>
                     <select class="form-control" id="merchantShopCategoryUuid" name="merchantShopCategoryUuid" required>
                         <option value="">Select a category</option>
                         <% categories.forEach(category => { %>
@@ -45,7 +63,7 @@
         </div>
 
         <div class="form-group">
-            <label>Shop Image</label>
+            <label>Shop Image *</label>
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="fileInputsImage" name="fileInputsImage" accept="image/*" required>
                 <label class="custom-file-label" for="fileInputsImage">Choose file</label>
@@ -61,7 +79,6 @@
 </div>
 
 <script>
-// Handle file input change
 document.getElementById('fileInputsImage').addEventListener('change', function(e) {
     const preview = document.getElementById('imagePreview');
     preview.innerHTML = '';
@@ -84,29 +101,4 @@ document.getElementById('fileInputsImage').addEventListener('change', function(e
     const label = this.nextElementSibling;
     label.textContent = fileName;
 });
-
-// Handle form submission
-async function handleSubmit(event) {
-    event.preventDefault();
-    
-    const formData = new FormData(event.target);
-
-    try {
-        const response = await fetch('/merchant/shops/create', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            window.location.href = '/merchant/shops';
-        } else {
-            alert(data.message || 'Error creating shop');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error creating shop');
-    }
-}
 </script>

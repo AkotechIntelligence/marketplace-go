@@ -1,4 +1,4 @@
-dyconst db = require("../../models");
+const db = require("../../models");
 const logger = require("../../logger");
 const { v4: uuidv4 } = require("uuid");
 
@@ -23,7 +23,6 @@ const MerchantShopController = {
                 order: [['createdAt', 'DESC']]
             });
 
-            // Calculate additional stats for each shop
             const shopsWithStats = await Promise.all(shops.map(async (shop) => {
                 const shopData = shop.get({ plain: true });
                 
@@ -32,20 +31,14 @@ const MerchantShopController = {
                     where: { merchantShopUuid: shop.uuid }
                 });
 
-                // Get orders count
-                const ordersCount = await db.OrderItem.count({
-                    include: [{
-                        model: db.Product,
-                        where: { merchantShopUuid: shop.uuid }
-                    }]
+                // Get orders count - simplified
+                const ordersCount = await db.Order.count({
+                    where: { merchantUuid: merchantId }
                 });
 
-                // Calculate revenue
-                const revenue = await db.OrderItem.sum('price', {
-                    include: [{
-                        model: db.Product,
-                        where: { merchantShopUuid: shop.uuid }
-                    }]
+                // Calculate revenue - simplified
+                const revenue = await db.Order.sum('total', {
+                    where: { merchantUuid: merchantId }
                 });
 
                 return {
@@ -64,60 +57,43 @@ const MerchantShopController = {
             });
         } catch (error) {
             logger.error(`Error fetching merchant shops: ${error.message}`, { error });
-            res.render("errors/500", {
-                title: "Server Error",
-                layout: "layout/blank-layout",
-                error: error.message
-            });
+            req.flash('error', 'Failed to load shops. Please try again.');
+            res.redirect('/merchant');
         }
     },
 
     async createShop(req, res) {
         try {
             const merchantId = req.user.uuid;
-            logger.info(`Creating shop for merchant req.body: >>`);
+            logger.info(`Creating shop for merchant: ${merchantId}`);
 
-             logger.info(`Creating shop for merchant: ${merchantId}`);
-
-            // Validate input
             const { shopName, description, zoneUuid, merchantShopCategoryUuid } = req.body;
             
-            // Validate required fields
             if (!shopName || !description || !zoneUuid || !merchantShopCategoryUuid) {
-                return res.status(400).json({
-                    status: "error",
-                    message: "Missing required fields"
-                });
+                req.flash('error', 'Please fill in all required fields');
+                return res.redirect('/merchant/shops/create');
             }
 
-            // Validate foreign keys exist
             const [zone, category] = await Promise.all([
                 db.MarketZone.findOne({ where: { zoneUuid } }),
                 db.MerchantShopCategory.findOne({ where: { uuid: merchantShopCategoryUuid } })
             ]);
 
             if (!zone || !category) {
-                return res.status(400).json({
-                    status: "error",
-                    message: "Invalid zone or category"
-                });
+                req.flash('error', 'Invalid zone or category selected');
+                return res.redirect('/merchant/shops/create');
             }
 
-            // Check for existing shop with same name
             const existingShop = await db.MerchantShop.findOne({ 
                 where: { shopName }
             });
 
             if (existingShop) {
-                logger.warn(`Shop name already exists: ${shopName}`);
-                return res.status(400).json({
-                    status: "error",
-                    message: "Shop name already exists"
-                });
+                req.flash('error', 'A shop with this name already exists');
+                return res.redirect('/merchant/shops/create');
             }
 
-            // Create shop
-            const shop = await db.MerchantShop.create({
+            await db.MerchantShop.create({
                 uuid: uuidv4(),
                 merchantUuid: merchantId,
                 shopName,
@@ -127,24 +103,17 @@ const MerchantShopController = {
                 imageUrl: req.file ? req.file.filename : null
             });
 
-            logger.info(`Shop created successfully: ${shop.uuid}`);
-            return res.status(201).json({
-                status: "success",
-                message: "Shop created successfully",
-                data: shop
-            });
+            req.flash('success', 'Shop created successfully');
+            res.redirect('/merchant/shops');
         } catch (error) {
             logger.error(`Error creating shop: ${error.message}`, { error });
-            return res.status(500).json({
-                status: "error",
-                message: "Failed to create shop"
-            });
+            req.flash('error', 'Failed to create shop. Please try again.');
+            res.redirect('/merchant/shops/create');
         }
     },
 
     async renderCreateShop(req, res) {
         try {
-            // Get zones and categories
             const zones = await db.MarketZone.findAll();
             const categories = await db.MerchantShopCategory.findAll();
 
@@ -157,11 +126,8 @@ const MerchantShopController = {
             });
         } catch (error) {
             logger.error(`Error rendering create shop page: ${error.message}`, { error });
-            res.render("errors/500", {
-                title: "Server Error",
-                layout: "layout/blank-layout",
-                error: error.message
-            });
+            req.flash('error', 'Failed to load shop creation page');
+            res.redirect('/merchant/shops');
         }
     }
 };
