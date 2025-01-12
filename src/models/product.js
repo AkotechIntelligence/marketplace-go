@@ -37,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
                 sourceKey: 'uuid',
                 as: 'images'
             });
+ 
         }
     }
 
@@ -77,6 +78,12 @@ module.exports = (sequelize, DataTypes) => {
         subCategoryUuid: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        currencyCode: {
+            type: DataTypes.STRING(3),
+            allowNull: false,
+            defaultValue: 'GHS'
+            
         }
     }, {
         sequelize,

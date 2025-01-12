@@ -10,42 +10,77 @@
     </div>
 </div>
 
+<% if (messages.error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= messages.error %>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<% } %>
+
+<% if (messages.success) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= messages.success %>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<% } %>
+
 <div class="row">
     <% shops.forEach(shop => { %>
         <div class="col-md-6 mb-4">
-            <div class="account-card">
-                <div class="d-flex align-items-center mb-3">
-                    <img src="<%= shop.imageUrl || '/images/shop-placeholder.png' %>" 
-                         alt="<%= shop.name %>" 
-                         class="rounded-circle mr-3"
-                         style="width: 60px; height: 60px; object-fit: cover;">
-                    <div>
-                        <h5 class="mb-1"><%= shop.name %></h5>
-                        <p class="text-muted mb-0"><%= shop.category %></p>
+            <div class="shop-card">
+                <div class="shop-card-header">
+                    <div class="shop-image">
+                        <img src="/uploads/shops/<%= shop.imageUrl || 'default-shop.png' %>" 
+                             alt="<%= shop.shopName %>" 
+                             class="shop-img">
+                    </div>
+                    <div class="shop-info">
+                        <h5 class="shop-name"><%= shop.shopName %></h5>
+                        <span class="shop-category"><%= shop.MerchantShopCategory.name %></span>
+                        <span class="shop-zone"><i class="fas fa-map-marker-alt"></i> <%= shop.MarketZone.name %></span>
                     </div>
                 </div>
-                <div class="shop-stats d-flex justify-content-between mb-3">
-                    <div class="text-center">
-                        <h6 class="mb-1"><%= shop.productsCount %></h6>
-                        <small class="text-muted">Products</small>
+                
+                <div class="shop-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-box"></i>
+                        <div class="stat-details">
+                            <span class="stat-value"><%= shop.productsCount %></span>
+                            <span class="stat-label">Products</span>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <h6 class="mb-1"><%= shop.ordersCount %></h6>
-                        <small class="text-muted">Orders</small>
+                    <div class="stat-item">
+                        <i class="fas fa-shopping-bag"></i>
+                        <div class="stat-details">
+                            <span class="stat-value"><%= shop.ordersCount %></span>
+                            <span class="stat-label">Orders</span>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <h6 class="mb-1">$<%= shop.revenue %></h6>
-                        <small class="text-muted">Revenue</small>
+                    <div class="stat-item">
+                        <i class="fas fa-dollar-sign"></i>
+                        <div class="stat-details">
+                            <span class="stat-value">$<%= shop.revenue.toFixed(2) %></span>
+                            <span class="stat-label">Revenue</span>
+                        </div>
                     </div>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <a href="/merchant/shops/<%= shop.id %>" class="btn btn-outline-primary btn-sm">
+
+                <div class="shop-description">
+                    <p><%= shop.description %></p>
+                </div>
+
+                <div class="shop-actions">
+                    <a href="/merchant/shops/<%= shop.uuid %>/edit" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-edit"></i> Edit
                     </a>
-                    <a href="/merchant/shops/<%= shop.id %>/products" class="btn btn-outline-success btn-sm">
+                    <a href="/merchant/shops/<%= shop.uuid %>/products" class="btn btn-outline-success btn-sm">
                         <i class="fas fa-box"></i> Products
                     </a>
-                    <a href="/merchant/shops/<%= shop.id %>/orders" class="btn btn-outline-info btn-sm">
+                    <a href="/merchant/shops/<%= shop.uuid %>/orders" class="btn btn-outline-info btn-sm">
                         <i class="fas fa-shopping-bag"></i> Orders
                     </a>
                 </div>
@@ -53,3 +88,132 @@
         </div>
     <% }); %>
 </div>
+
+<style>
+.shop-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.shop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.shop-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.shop-image {
+    width: 80px;
+    height: 80px;
+    margin-right: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.shop-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.shop-info {
+    flex-grow: 1;
+}
+
+.shop-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #2c3e50;
+}
+
+.shop-category {
+    display: block;
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.shop-zone {
+    display: block;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.shop-zone i {
+    color: var(--primary);
+    margin-right: 0.25rem;
+}
+
+.shop-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.stat-item i {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+    color: var(--primary);
+}
+
+.stat-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.shop-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.shop-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.shop-actions .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.shop-actions .btn i {
+    font-size: 0.875rem;
+}
+</style>
