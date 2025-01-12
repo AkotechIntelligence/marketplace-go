@@ -4,7 +4,12 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class MerchantShop extends Model {
         static associate(models) {
-            MerchantShop.belongsTo(models.Merchant, {
+            MerchantShop.
+
+
+
+
+						belongsTo(models.Merchant, {
                 foreignKey: 'merchantUuid',
                 targetKey: 'uuid',
                 onDelete: 'CASCADE',
