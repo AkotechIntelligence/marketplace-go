@@ -57,7 +57,7 @@ const MerchantShopController = {
             });
         } catch (error) {
             logger.error(`Error fetching merchant shops: ${error.message}`, { error });
-            req.flash('error', 'Failed to load shops. Please try again.');
+            req.flash('error', 'Failed to load shops');
             res.redirect('/merchant');
         }
     },
@@ -107,7 +107,7 @@ const MerchantShopController = {
             res.redirect('/merchant/shops');
         } catch (error) {
             logger.error(`Error creating shop: ${error.message}`, { error });
-            req.flash('error', 'Failed to create shop. Please try again.');
+            req.flash('error', 'Failed to create shop');
             res.redirect('/merchant/shops/create');
         }
     },
@@ -128,6 +128,176 @@ const MerchantShopController = {
             logger.error(`Error rendering create shop page: ${error.message}`, { error });
             req.flash('error', 'Failed to load shop creation page');
             res.redirect('/merchant/shops');
+        }
+    },
+
+    async renderEditShop(req, res) {
+        try {
+            const { shopUuid } = req.params;
+            const merchantId = req.user.uuid;
+
+            const shop = await db.MerchantShop.findOne({
+                where: { 
+                    uuid: shopUuid,
+                    merchantUuid: merchantId
+                }
+            });
+
+            if (!shop) {
+                req.flash('error', 'Shop not found');
+                return res.redirect('/merchant/shops');
+            }
+
+            const [zones, categories] = await Promise.all([
+                db.MarketZone.findAll(),
+                db.MerchantShopCategory.findAll()
+            ]);
+
+            res.render("page/merchant/edit-shop", {
+                title: "Edit Shop",
+                layout: "layout/merchant-account",
+                shop,
+                zones,
+                categories,
+                user: req.user
+            });
+        } catch (error) {
+            logger.error(`Error rendering edit shop page: ${error.message}`, { error });
+            req.flash('error', 'Failed to load shop edit page');
+            res.redirect('/merchant/shops');
+        }
+    },
+
+    async updateShop(req, res) {
+        try {
+            const { shopUuid } = req.params;
+            const merchantId = req.user.uuid;
+            const { shopName, description, zoneUuid, merchantShopCategoryUuid } = req.body;
+
+            const shop = await db.MerchantShop.findOne({
+                where: { 
+                    uuid: shopUuid,
+                    merchantUuid: merchantId
+                }
+            });
+
+            if (!shop) {
+                req.flash('error', 'Shop not found');
+                return res.redirect('/merchant/shops');
+            }
+
+            const existingShop = await db.MerchantShop.findOne({
+                where: {
+                    shopName,
+                    uuid: { [db.Sequelize.Op.ne]: shopUuid }
+                }
+            });
+
+            if (existingShop) {
+                req.flash('error', 'A shop with this name already exists');
+                return res.redirect(`/merchant/shops/${shopUuid}/edit`);
+            }
+
+            await shop.update({
+                shopName,
+                description,
+                zoneUuid,
+                merchantShopCategoryUuid,
+                imageUrl: req.file ? req.file.filename : shop.imageUrl
+            });
+
+            req.flash('success', 'Shop updated successfully');
+            res.redirect('/merchant/shops');
+        } catch (error) {
+            logger.error(`Error updating shop: ${error.message}`, { error });
+            req.flash('error', 'Failed to update shop');
+            res.redirect(`/merchant/shops/${req.params.shopUuid}/edit`);
+        }
+    },
+
+    async deleteShop(req, res) {
+        try {
+            const { shopUuid } = req.params;
+            const merchantId = req.user.uuid;
+
+            const shop = await db.MerchantShop.findOne({
+                where: { 
+                    uuid: shopUuid,
+                    merchantUuid: merchantId
+                }
+            });
+
+            if (!shop) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Shop not found'
+                });
+            }
+
+            // Check if shop has any products
+            const productsCount = await db.Product.count({
+                where: { merchantShopUuid: shopUuid }
+            });
+
+            if (productsCount > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Cannot delete shop with existing products'
+                });
+            }
+
+            await shop.destroy();
+
+            res.json({
+                success: true,
+                message: 'Shop deleted successfully'
+            });
+        } catch (error) {
+            logger.error(`Error deleting shop: ${error.message}`, { error });
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete shop'
+            });
+        }
+    },
+
+    async deleteShopImage(req, res) {
+        try {
+            const { shopUuid } = req.params;
+            const merchantId = req.user.uuid;
+
+            const shop = await db.MerchantShop.findOne({
+                where: { 
+                    uuid: shopUuid,
+                    merchantUuid: merchantId
+                }
+            });
+
+            if (!shop) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Shop not found'
+                });
+            }
+
+            if (shop.imageUrl) {
+                // Delete the file using the upload controller
+                const uploadController = require("../UploadController");
+                await uploadController.deleteFile(`shops/${shop.imageUrl}`);
+
+                await shop.update({ imageUrl: null });
+            }
+
+            res.json({
+                success: true,
+                message: 'Shop image deleted successfully'
+            });
+        } catch (error) {
+            logger.error(`Error deleting shop image: ${error.message}`, { error });
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete shop image'
+            });
         }
     }
 };
