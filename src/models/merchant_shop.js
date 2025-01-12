@@ -6,11 +6,21 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             MerchantShop.belongsTo(models.Merchant, {
                 foreignKey: 'merchantUuid',
-                targetKey: 'uuid'
+                targetKey: 'uuid',
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE'
             });
             MerchantShop.belongsTo(models.MarketZone, {
                 foreignKey: 'zoneUuid',
-                targetKey: 'zoneUuid'
+                targetKey: 'zoneUuid',
+                onDelete: 'RESTRICT',
+                onUpdate: 'CASCADE'
+            });
+            MerchantShop.belongsTo(models.MerchantShopCategory, {
+                foreignKey: 'merchantShopCategoryUuid',
+                targetKey: 'uuid',
+                onDelete: 'RESTRICT',
+                onUpdate: 'CASCADE'
             });
             MerchantShop.hasMany(models.Product, {
                 foreignKey: 'merchantShopUuid',
@@ -27,20 +37,33 @@ module.exports = (sequelize, DataTypes) => {
         },
         shopName: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         description: DataTypes.STRING,
         zoneUuid: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'MarketZone',
+                key: 'zoneUuid'
+            }
         },
         merchantShopCategoryUuid: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'MerchantShopCategory',
+                key: 'uuid'
+            }
         },
         merchantUuid: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'Merchant',
+                key: 'uuid'
+            }
         },
         imageUrl: {
             type: DataTypes.STRING,

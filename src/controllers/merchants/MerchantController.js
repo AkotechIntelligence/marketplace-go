@@ -37,10 +37,15 @@ const MerchantController = {
             // Get recent orders
             const recentOrders = await db.Order.findAll({
                 include: [{
-                    model: db.Product,
+                    model: db.OrderItem,
+                    as: 'orderItems',
                     include: [{
-                        model: db.MerchantShop,
-                        where: { merchantUuid: merchantId }
+                        model: db.Product,
+                        as: 'product',
+                        include: [{
+                            model: db.MerchantShop,
+                            where: { merchantUuid: merchantId }
+                        }]
                     }]
                 }],
                 limit: 5,
