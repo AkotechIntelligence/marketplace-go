@@ -34,8 +34,8 @@
             <div class="shop-card">
                 <div class="shop-card-header">
                     <div class="shop-image">
-                        <img src="/uploads/shops/<%= shop.imageUrl || 'default-shop.png' %>" 
-                             alt="<%= shop.shopName %>" 
+                        <img src="/uploads/shops/<%= shop.imageUrl || 'default-shop.png' %>"
+                             alt="<%= shop.shopName %>"
                              class="shop-img">
                     </div>
                     <div class="shop-info">
@@ -44,7 +44,7 @@
                         <span class="shop-zone"><i class="fas fa-map-marker-alt"></i> <%= shop.MarketZone.name %></span>
                     </div>
                 </div>
-                
+
                 <div class="shop-stats">
                     <div class="stat-item">
                         <i class="fas fa-box"></i>
@@ -77,10 +77,10 @@
                     <a href="/merchant/shops/<%= shop.uuid %>/edit" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-edit"></i> Edit
                     </a>
-                    <a href="/merchant/shops/<%= shop.uuid %>/products" class="btn btn-outline-success btn-sm">
+                    <a href="/merchant/shop/products/<%= shop.uuid %>" class="btn btn-outline-success btn-sm">
                         <i class="fas fa-box"></i> Products
                     </a>
-                    <a href="/merchant/shops/<%= shop.uuid %>/orders" class="btn btn-outline-info btn-sm">
+                    <a href="/merchant/shop/orders/<%= shop.uuid %>" class="btn btn-outline-info btn-sm">
                         <i class="fas fa-shopping-bag"></i> Orders
                     </a>
                 </div>

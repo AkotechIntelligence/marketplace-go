@@ -13,17 +13,13 @@ const MerchantController = {
             // Get merchant's shops with product counts
             const shops = await db.MerchantShop.findAll({
                 where: { merchantUuid: merchantId },
-                include: [{
-                    model: db.Product,
-                    required: false
-                }],
                 attributes: [
                     'uuid',
                     'shopName',
                     'description',
                     'imageUrl',
-                    'createdAt',
-                    [Sequelize.fn('COUNT', Sequelize.col('Products.uuid')), 'productCount']
+                    'createdAt'
+
                 ],
                 group: [
                     'MerchantShop.uuid',
