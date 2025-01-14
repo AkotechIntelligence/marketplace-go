@@ -8,6 +8,8 @@ const ProductController = {
             const merchantId = req.user.uuid;
             const { shopUuid } = req.params;
             
+            logger.info('Fetching products', { merchantId, shopUuid });
+            
             let where = {};
             let shop = null;
 
@@ -20,6 +22,7 @@ const ProductController = {
                 });
 
                 if (!shop) {
+                    logger.warn('Shop not found or unauthorized access', { shopUuid, merchantId });
                     req.flash('error', 'Shop not found');
                     return res.redirect('/merchant/products');
                 }
@@ -48,9 +51,18 @@ const ProductController = {
                     {
                         model: db.ProductCategory,
                         as: 'category'
+                    },
+                    {
+                        model: db.ProductSubcategory,
+                        as: 'subcategory'
                     }
                 ],
                 order: [['createdAt', 'DESC']]
+            });
+
+            logger.info('Products fetched successfully', { 
+                merchantId, 
+                productCount: products.length 
             });
 
             res.render("page/merchant/products", {
@@ -62,13 +74,12 @@ const ProductController = {
                 user: req.user
             });
         } catch (error) {
-            logger.error(`Error fetching products: ${error.message}`, { error });
+            logger.error('Error fetching products', { error: error.message, stack: error.stack });
             req.flash('error', 'Failed to load products');
             res.redirect('/merchant');
         }
     },
-
-    async renderCreateProduct(req, res) {
+   async renderCreateProduct(req, res) {
         try {
             const merchantId = req.user.uuid;
             const { shopUuid } = req.params;
@@ -98,62 +109,105 @@ const ProductController = {
 
     async createProduct(req, res) {
         try {
-            const merchantId = req.user.uuid;
-            const {
-                name,
-                description,
-                price,
-                quantity,
-                merchantShopUuid,
-                categoryUuid,
-                subCategoryUuid,
-                currencyCode = 'GHS' // Default to GHS if not specified
-            } = req.body;
+            logger.info('Starting product creation', {
+                merchantId: req.user.uuid,
+                shopId: req.body.merchantShopUuid
+            });
 
             // Validate shop ownership
             const shop = await db.MerchantShop.findOne({
                 where: { 
-                    uuid: merchantShopUuid,
-                    merchantUuid: merchantId
+                    uuid: req.body.merchantShopUuid,
+                    merchantUuid: req.user.uuid
                 }
             });
 
             if (!shop) {
-                req.flash('error', "You don't have permission to add products to this shop");
-                return res.redirect('/merchant/products/create');
+                logger.warn('Unauthorized shop access attempt', {
+                    merchantId: req.user.uuid,
+                    shopId: req.body.merchantShopUuid
+                });
+                return res.status(403).json({
+                    success: false,
+                    message: "You don't have permission to add products to this shop"
+                });
             }
 
             // Create product
             const product = await db.Product.create({
                 uuid: uuidv4(),
-                name,
-                description,
-                price,
-                quantity,
-                merchantShopUuid,
-                categoryUuid,
-                subCategoryUuid,
-                currencyCode
+                name: req.body.name,
+                description: req.body.description,
+                price: req.body.price,
+                quantity: req.body.quantity,
+                merchantShopUuid: req.body.merchantShopUuid,
+                categoryUuid: req.body.categoryUuid,
+                subCategoryUuid: req.body.subCategoryUuid,
+                currencyCode: req.body.currencyCode || 'GHS'
             });
 
-            // Handle product images
-            if (req.files && req.files.length > 0) {
-                await Promise.all(req.files.map(file => 
-                    db.ProductImage.create({
+            // Handle product options
+            if (req.body.productOptions) {
+                const options = JSON.parse(req.body.productOptions);
+                await Promise.all(options.map(option => 
+                    db.ProductOption.create({
                         uuid: uuidv4(),
                         productUuid: product.uuid,
-                        imageUrl: file.filename,
-                        isDefault: false
+                        merchantUuid: req.user.uuid,
+                        shopUuid: req.body.merchantShopUuid,
+                        optionName: option.optionName,
+                        price: option.price,
+                        imageUrl: option.imageUrl
                     })
                 ));
             }
 
-            req.flash('success', 'Product created successfully');
-            res.redirect('/merchant/products');
+            // Handle product fields
+            if (req.body.productFields) {
+                const fields = JSON.parse(req.body.productFields);
+                await Promise.all(fields.map(field =>
+                    db.ProductField.create({
+                        uuid: uuidv4(),
+                        productUuid: product.uuid,
+                        fieldName: field.fieldLabel.toLowerCase().replace(/\s+/g, '_'),
+                        fieldLabel: field.fieldLabel,
+                        fieldType: field.fieldType
+                    })
+                ));
+            }
+
+            // Handle product images
+            if (req.files && req.files.length > 0) {
+                await Promise.all(req.files.map((file, index) => 
+                    db.ProductImage.create({
+                        uuid: uuidv4(),
+                        productUuid: product.uuid,
+                        imageUrl: file.filename,
+                        isDefault: index === 0
+                    })
+                ));
+            }
+
+            logger.info('Product created successfully', { productId: product.uuid });
+
+            res.status(201).json({
+                success: true,
+                message: "Product created successfully",
+                productId: product.uuid
+            });
+
         } catch (error) {
-            logger.error(`Error creating product: ${error.message}`, { error });
-            req.flash('error', 'Failed to create product');
-            res.redirect('/merchant/products/create');
+            logger.error('Error creating product', {
+                error: error.message,
+                stack: error.stack,
+                merchantId: req.user?.uuid
+            });
+
+            res.status(500).json({
+                success: false,
+                message: "Failed to create product",
+                error: error.message
+            });
         }
     },
 
@@ -203,18 +257,10 @@ const ProductController = {
 
     async updateProduct(req, res) {
         try {
-            const merchantId = req.user.uuid;
             const { productUuid } = req.params;
-            const {
-                name,
-                description,
-                price,
-                quantity,
-                merchantShopUuid,
-                categoryUuid,
-                subCategoryUuid,
-                currencyCode
-            } = req.body;
+            const merchantId = req.user.uuid;
+
+            logger.info('Starting product update', { productUuid, merchantId });
 
             // Verify product ownership
             const product = await db.Product.findOne({
@@ -226,20 +272,23 @@ const ProductController = {
             });
 
             if (!product) {
-                req.flash('error', 'Product not found or access denied');
-                return res.redirect('/merchant/products');
+                logger.warn('Product not found or unauthorized access', { productUuid, merchantId });
+                return res.status(404).json({
+                    success: false,
+                    message: "Product not found or access denied"
+                });
             }
 
             // Update product
             await product.update({
-                name,
-                description,
-                price,
-                quantity,
-                merchantShopUuid,
-                categoryUuid,
-                subCategoryUuid,
-                currencyCode
+                name: req.body.name,
+                description: req.body.description,
+                price: req.body.price,
+                quantity: req.body.quantity,
+                merchantShopUuid: req.body.merchantShopUuid,
+                categoryUuid: req.body.categoryUuid,
+                subCategoryUuid: req.body.subCategoryUuid,
+                currencyCode: req.body.currencyCode
             });
 
             // Handle new images
@@ -254,19 +303,70 @@ const ProductController = {
                 ));
             }
 
-            req.flash('success', 'Product updated successfully');
-            res.redirect('/merchant/products');
+            // Update options if provided
+            if (req.body.productOptions) {
+                const options = JSON.parse(req.body.productOptions);
+                // Delete existing options
+                await db.ProductOption.destroy({
+                    where: { productUuid: product.uuid }
+                });
+                // Create new options
+                await Promise.all(options.map(option => 
+                    db.ProductOption.create({
+                        uuid: uuidv4(),
+                        productUuid: product.uuid,
+                        merchantUuid: merchantId,
+                        shopUuid: product.merchantShopUuid,
+                        ...option
+                    })
+                ));
+            }
+
+            // Update fields if provided
+            if (req.body.productFields) {
+                const fields = JSON.parse(req.body.productFields);
+                // Delete existing fields
+                await db.ProductField.destroy({
+                    where: { productUuid: product.uuid }
+                });
+                // Create new fields
+                await Promise.all(fields.map(field =>
+                    db.ProductField.create({
+                        uuid: uuidv4(),
+                        productUuid: product.uuid,
+                        ...field
+                    })
+                ));
+            }
+
+            logger.info('Product updated successfully', { productUuid });
+
+            res.json({
+                success: true,
+                message: "Product updated successfully"
+            });
+
         } catch (error) {
-            logger.error(`Error updating product: ${error.message}`, { error });
-            req.flash('error', 'Failed to update product');
-            res.redirect(`/merchant/products/${req.params.productUuid}/edit`);
+            logger.error('Error updating product', {
+                error: error.message,
+                stack: error.stack,
+                merchantId: req.user?.uuid
+            });
+
+            res.status(500).json({
+                success: false,
+                message: "Failed to update product",
+                error: error.message
+            });
         }
     },
 
     async deleteProduct(req, res) {
         try {
-            const merchantId = req.user.uuid;
             const { productUuid } = req.params;
+            const merchantId = req.user.uuid;
+
+            logger.info('Attempting to delete product', { productUuid, merchantId });
 
             const product = await db.Product.findOne({
                 where: { uuid: productUuid },
@@ -277,9 +377,10 @@ const ProductController = {
             });
 
             if (!product) {
+                logger.warn('Product not found or unauthorized deletion attempt', { productUuid, merchantId });
                 return res.status(404).json({
                     success: false,
-                    message: 'Product not found or access denied'
+                    message: "Product not found or access denied"
                 });
             }
 
@@ -288,26 +389,47 @@ const ProductController = {
                 where: { productUuid: product.uuid }
             });
 
+            // Delete associated options
+            await db.ProductOption.destroy({
+                where: { productUuid: product.uuid }
+            });
+
+            // Delete associated fields
+            await db.ProductField.destroy({
+                where: { productUuid: product.uuid }
+            });
+
             // Delete the product
             await product.destroy();
 
+            logger.info('Product deleted successfully', { productUuid });
+
             res.json({
                 success: true,
-                message: 'Product deleted successfully'
+                message: "Product deleted successfully"
             });
+
         } catch (error) {
-            logger.error(`Error deleting product: ${error.message}`, { error });
+            logger.error('Error deleting product', {
+                error: error.message,
+                stack: error.stack,
+                merchantId: req.user?.uuid
+            });
+
             res.status(500).json({
                 success: false,
-                message: 'Failed to delete product'
+                message: "Failed to delete product",
+                error: error.message
             });
         }
     },
 
     async deleteProductImage(req, res) {
         try {
-            const merchantId = req.user.uuid;
             const { imageId } = req.params;
+            const merchantId = req.user.uuid;
+
+            logger.info('Attempting to delete product image', { imageId, merchantId });
 
             const image = await db.ProductImage.findOne({
                 where: { uuid: imageId },
@@ -321,9 +443,10 @@ const ProductController = {
             });
 
             if (!image) {
+                logger.warn('Image not found or unauthorized deletion attempt', { imageId, merchantId });
                 return res.status(404).json({
                     success: false,
-                    message: 'Image not found or access denied'
+                    message: "Image not found or access denied"
                 });
             }
 
@@ -334,15 +457,24 @@ const ProductController = {
             // Delete the database record
             await image.destroy();
 
+            logger.info('Product image deleted successfully', { imageId });
+
             res.json({
                 success: true,
-                message: 'Product image deleted successfully'
+                message: "Product image deleted successfully"
             });
+
         } catch (error) {
-            logger.error(`Error deleting product image: ${error.message}`, { error });
+            logger.error('Error deleting product image', {
+                error: error.message,
+                stack: error.stack,
+                merchantId: req.user?.uuid
+            });
+
             res.status(500).json({
                 success: false,
-                message: 'Failed to delete product image'
+                message: "Failed to delete product image",
+                error: error.message
             });
         }
     }

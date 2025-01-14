@@ -1,4 +1,132 @@
-// Handle file input change
+// Initialize Alpine.js data
+document.addEventListener('alpine:init', () => {
+    Alpine.data('productForm', () => ({
+        productOptions: [],
+        productFields: [],
+        currentOption: { optionName: '', price: '', imageUrl: null },
+        currentField: { fieldLabel: '', fieldType: '' },
+        selectedCurrency: 'GHS',
+        
+        init() {
+            // Initialize Bootstrap modals
+            $('#optionModal').modal({
+                backdrop: 'static',
+                keyboard: false,
+                show: false
+            });
+            
+            $('#fieldModal').modal({
+                backdrop: 'static',
+                keyboard: false,
+                show: false
+            });
+        },
+
+        openOptionModal() {
+            this.currentOption = { optionName: '', price: '', imageUrl: null };
+            $('#optionModal').modal('show');
+        },
+
+        openFieldModal() {
+            this.currentField = { fieldLabel: '', fieldType: '' };
+            $('#fieldModal').modal('show');
+        },
+
+        addProductOption() {
+            console.log('Adding product option:', this.currentOption);
+            
+            if (!this.currentOption.optionName || !this.currentOption.price) {
+                alert('Please fill in both option name and price');
+                return;
+            }
+
+            this.productOptions.push({
+                optionName: this.currentOption.optionName,
+                price: parseFloat(this.currentOption.price),
+                imageUrl: this.currentOption.imageUrl
+            });
+
+            // Reset form and close modal
+            this.currentOption = { optionName: '', price: '', imageUrl: null };
+            $('#optionModal').modal('hide');
+        },
+
+        addProductField() {
+            console.log('Adding product field:', this.currentField);
+            
+            if (!this.currentField.fieldLabel || !this.currentField.fieldType) {
+                alert('Please fill in both field label and type');
+                return;
+            }
+
+            this.productFields.push({
+                fieldLabel: this.currentField.fieldLabel,
+                fieldType: this.currentField.fieldType
+            });
+
+            // Reset form and close modal
+            this.currentField = { fieldLabel: '', fieldType: '' };
+            $('#fieldModal').modal('hide');
+        },
+
+        removeOption(index) {
+            this.productOptions.splice(index, 1);
+        },
+
+        removeField(index) {
+            this.productFields.splice(index, 1);
+        },
+
+        handleOptionImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.currentOption.imageUrl = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        },
+
+        async handleSubmit(event) {
+            event.preventDefault();
+            
+            try {
+                const form = event.target;
+                const formData = new FormData(form);
+
+                // Add product options and fields to form data
+                formData.append('productOptions', JSON.stringify(this.productOptions));
+                formData.append('productFields', JSON.stringify(this.productFields));
+
+                // Log the data being sent
+                console.log('Submitting product with options:', this.productOptions);
+                console.log('Submitting product with fields:', this.productFields);
+
+                const response = await fetch('/merchant/products/create', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show success message
+                    alert('Product created successfully!');
+                    // Redirect to products page
+                    window.location.href = '/merchant/products';
+                } else {
+                    throw new Error(data.message || 'Failed to create product');
+                }
+            } catch (error) {
+                console.error('Error creating product:', error);
+                alert(error.message || 'Error creating product. Please try again.');
+            }
+        }
+    }));
+});
+
+// Handle file input change for product images
 function handleFileInput(event) {
     const preview = document.getElementById('imagePreview');
     preview.innerHTML = '';
@@ -25,106 +153,41 @@ function handleFileInput(event) {
     label.textContent = fileCount > 1 ? `${fileCount} files selected` : event.target.files[0].name;
 }
 
-// Handle category change
-async function handleCategoryChange(event) {
-    const categoryId = event.target.value;
-    const subCategorySelect = document.getElementById('subCategoryUuid');
-    
-    if (!categoryId) {
-        subCategorySelect.disabled = true;
-        subCategorySelect.innerHTML = '<option value="">Select a category first</option>';
-        return;
-    }
-
-    try {
-        const response = await fetch(`/api/productsubcategory/product/${categoryId}`);
-        const data = await response.json();
-        
-        subCategorySelect.innerHTML = '<option value="">Select a sub category</option>';
-        data.data.forEach(subCat => {
-            subCategorySelect.innerHTML += `
-                <option value="${subCat.uuid}">${subCat.name}</option>
-            `;
-        });
-        subCategorySelect.disabled = false;
-    } catch (error) {
-        console.error('Error fetching subcategories:', error);
-        alert('Error loading subcategories');
-    }
-}
-
 // Initialize event listeners
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('files');
-    const categorySelect = document.getElementById('categoryUuid');
-    
     if (fileInput) {
         fileInput.addEventListener('change', handleFileInput);
     }
-    
+
+    // Handle category change
+    const categorySelect = document.getElementById('categoryUuid');
     if (categorySelect) {
-        categorySelect.addEventListener('change', handleCategoryChange);
-    }
+        categorySelect.addEventListener('change', async function(e) {
+            const categoryId = e.target.value;
+            const subCategorySelect = document.getElementById('subCategoryUuid');
+            
+            if (!categoryId) {
+                subCategorySelect.disabled = true;
+                subCategorySelect.innerHTML = '<option value="">Select a category first</option>';
+                return;
+            }
 
-    // Initialize Bootstrap modals
-    document.querySelectorAll('.modal').forEach(modal => {
-        new bootstrap.Modal(modal);
-    });
-});
-
-// Alpine.js functions
-function addProductOption() {
-    const option = { ...this.currentOption };
-    this.productOptions.push(option);
-    this.currentOption = { optionName: '', price: '', imageUrl: null };
-    this.showOptionModal = false;
-}
-
-function addProductField() {
-    const field = { ...this.currentField };
-    this.productFields.push(field);
-    this.currentField = { fieldName: '', fieldType: '', fieldLabel: '' };
-    this.showFieldModal = false;
-}
-
-function handleOptionImage(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            this.currentOption.imageUrl = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-// Form submission
-async function handleSubmit(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-
-    // Add product options
-    formData.append('productOptions', JSON.stringify(this.productOptions));
-    
-    // Add product fields
-    formData.append('productFields', JSON.stringify(this.productFields));
-
-    try {
-        const response = await fetch('/merchant/products/create', {
-            method: 'POST',
-            body: formData
+            try {
+                const response = await fetch(`/api/productsubcategory/product/${categoryId}`);
+                const data = await response.json();
+                
+                subCategorySelect.innerHTML = '<option value="">Select a sub category</option>';
+                data.data.forEach(subCat => {
+                    subCategorySelect.innerHTML += `
+                        <option value="${subCat.uuid}">${subCat.name}</option>
+                    `;
+                });
+                subCategorySelect.disabled = false;
+            } catch (error) {
+                console.error('Error fetching subcategories:', error);
+                alert('Error loading subcategories');
+            }
         });
-
-        const data = await response.json();
-        
-        if (data.success) {
-            window.location.href = '/merchant/products';
-        } else {
-            alert(data.message || 'Error creating product');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error creating product');
     }
-}
+});
