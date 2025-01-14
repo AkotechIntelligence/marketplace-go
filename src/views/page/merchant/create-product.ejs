@@ -1,185 +1,345 @@
-<%- include('../../layout/_partials/_head.ejs') %>
-
-<link rel="stylesheet" href="/css/merchant/create-product.css">
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-<div class="account-header">
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <h1 class="account-title">Create Product or Service</h1>
-            <p class="account-subtitle">Add a new product or service to your shop</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <%- include('../../layout/_partials/_head.ejs') %>
+    <link rel="stylesheet" href="/css/merchant/create-product.css">
+    <!-- Add Alpine.js from CDN before any Alpine code -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Add Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="account-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="account-title">Create Product or Service</h1>
+                <p class="account-subtitle">Add a new product or service to your shop</p>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="account-card product-form-container" x-data="{ 
-    productOptions: [],
-    productFields: [],
-    showOptionModal: false,
-    showFieldModal: false,
-    currentOption: { optionName: '', price: '', imageUrl: null },
-    currentField: { fieldName: '', fieldType: '', fieldLabel: '' },
-    selectedCurrency: 'GHS'
-}">
-    <form id="createProductForm" onsubmit="handleSubmit(event)">
-        <div class="form-section">
-            <h3 class="form-section-title">Basic Information</h3>
-            
-            <div class="form-group">
-                <label for="merchantShopUuid">Shop *</label>
-                <select class="form-control" id="merchantShopUuid" name="merchantShopUuid" required>
-                    <option value="">Select a shop</option>
-                    <% shops.forEach(shop => { %>
-                        <option value="<%= shop.uuid %>" 
-                                <%= shopUuid && shop.uuid === shopUuid ? 'selected' : '' %>
-                                data-zone="<%= shop.zoneUuid %>">
-                            <%= shop.shopName %>
-                        </option>
-                    <% }); %>
-                </select>
+    <div class="account-card product-form-container" x-data="productForm()">
+        <form id="createProductForm" @submit.prevent="handleSubmit">
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <h3 class="form-section-title">Basic Information</h3>
+                
+                <div class="form-group">
+                    <label for="merchantShopUuid">Shop *</label>
+                    <select class="form-control" id="merchantShopUuid" name="merchantShopUuid" required>
+                        <option value="">Select a shop</option>
+                        <% shops.forEach(shop => { %>
+                            <option value="<%= shop.uuid %>" 
+                                    <%= shopUuid && shop.uuid === shopUuid ? 'selected' : '' %>>
+                                <%= shop.shopName %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Product Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="price">Price *</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <select class="form-control currency-select" name="currencyCode" x-model="selectedCurrency">
+                                        <option value="GHS">GHS</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                                <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="quantity">Quantity *</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" required>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="name">Product Name *</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+            <!-- Product Options Section -->
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="form-section-title mb-0">Product Options</h3>
+                    <button type="button" class="btn btn-outline-primary" @click="openOptionModal">
+                        <i class="fas fa-plus"></i> Add Option
+                    </button>
+                </div>
+                
+                <template x-if="productOptions.length > 0">
+                    <div class="product-options-list">
+                        <template x-for="(option, index) in productOptions" :key="index">
+                            <div class="option-item card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title" x-text="option.optionName"></h5>
+                                            <p class="card-text">
+                                                Price: <span x-text="`${selectedCurrency} ${option.price}`"></span>
+                                            </p>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                @click="removeOption(index)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <img x-show="option.imageUrl" :src="option.imageUrl" 
+                                         class="option-image mt-2" alt="Option image">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
             </div>
 
-            <div class="form-group">
-                <label for="description">Description *</label>
-                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            <!-- Product Fields Section -->
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="form-section-title mb-0">Custom Fields</h3>
+                    <button type="button" class="btn btn-outline-primary" @click="openFieldModal">
+                        <i class="fas fa-plus"></i> Add Field
+                    </button>
+                </div>
+                
+                <template x-if="productFields.length > 0">
+                    <div class="product-fields-list">
+                        <template x-for="(field, index) in productFields" :key="index">
+                            <div class="field-item card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title" x-text="field.fieldLabel"></h5>
+                                            <p class="card-text">Type: <span x-text="field.fieldType"></span></p>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                @click="removeField(index)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
+            <!-- Product Images Section -->
+            <div class="form-section">
+                <h3 class="form-section-title">Product Images</h3>
+                <div class="form-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="files" name="files" 
+                               multiple accept="image/*" required>
+                        <label class="custom-file-label" for="files">Choose files</label>
+                    </div>
+                    <div id="imagePreview" class="image-preview-container mt-3"></div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Create Product</button>
+                <a href="/merchant/products" class="btn btn-outline-secondary ml-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Option Modal -->
+    <div class="modal fade" id="optionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Product Option</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
                     <div class="form-group">
-                        <label for="price">Price *</label>
+                        <label>Option Name</label>
+                        <input type="text" class="form-control" x-model="currentOption.optionName">
+                    </div>
+                    <div class="form-group">
+                        <label>Price</label>
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <select class="form-control currency-select" name="currencyCode" x-model="selectedCurrency">
-                                    <option value="GHS">GHS</option>
-                                    <option value="USD">USD</option>
-                                    <option value="EUR">EUR</option>
-                                    <option value="GBP">GBP</option>
-                                </select>
+                                <span class="input-group-text" x-text="selectedCurrency"></span>
                             </div>
-                            <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                            <input type="number" class="form-control" x-model="currentOption.price" step="0.01">
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
                     <div class="form-group">
-                        <label for="quantity">Quantity *</label>
-                        <input type="number" class="form-control" id="quantity" name="quantity" required>
+                        <label>Image (Optional)</label>
+                        <input type="file" class="form-control" @change="handleOptionImage" accept="image/*">
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="addProductOption">Add Option</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="form-section">
-            <h3 class="form-section-title">Categories</h3>
-            <div class="row">
-                <div class="col-md-6">
+    <!-- Field Modal -->
+    <div class="modal fade" id="fieldModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Custom Field</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
                     <div class="form-group">
-                        <label for="categoryUuid">Category *</label>
-                        <select class="form-control" id="categoryUuid" name="categoryUuid" required>
-                            <option value="">Select a category</option>
-                            <% categories.forEach(category => { %>
-                                <option value="<%= category.uuid %>"><%= category.name %></option>
-                            <% }); %>
+                        <label>Field Label</label>
+                        <input type="text" class="form-control" x-model="currentField.fieldLabel">
+                    </div>
+                    <div class="form-group">
+                        <label>Field Type</label>
+                        <select class="form-control" x-model="currentField.fieldType">
+                            <option value="">Select Type</option>
+                            <option value="TextInput">Text Input</option>
+                            <option value="SingleSelect">Single Select</option>
+                            <option value="MultiSelect">Multi Select</option>
+                            <option value="Number">Number</option>
                         </select>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="subCategoryUuid">Sub Category *</label>
-                        <select class="form-control" id="subCategoryUuid" name="subCategoryUuid" required disabled>
-                            <option value="">Select a category first</option>
-                        </select>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="addProductField">Add Field</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="form-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="form-section-title mb-0">Product Options</h3>
-                <button type="button" class="btn btn-outline-primary" @click="showOptionModal = true">
-                    <i class="fas fa-plus"></i> Add Option
-                </button>
-            </div>
+    <!-- Add jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Add custom JavaScript -->
+    <script>
+        function productForm() {
+            return {
+                productOptions: [],
+                productFields: [],
+                currentOption: { optionName: '', price: '', imageUrl: null },
+                currentField: { fieldLabel: '', fieldType: '' },
+                selectedCurrency: 'GHS',
+                
+                openOptionModal() {
+                    $('#optionModal').modal('show');
+                },
+                
+                openFieldModal() {
+                    $('#fieldModal').modal('show');
+                },
+                
+                addProductOption() {
+                    if (this.currentOption.optionName && this.currentOption.price) {
+                        this.productOptions.push({...this.currentOption});
+                        this.currentOption = { optionName: '', price: '', imageUrl: null };
+                        $('#optionModal').modal('hide');
+                    }
+                },
+                
+                addProductField() {
+                    if (this.currentField.fieldLabel && this.currentField.fieldType) {
+                        this.productFields.push({...this.currentField});
+                        this.currentField = { fieldLabel: '', fieldType: '' };
+                        $('#fieldModal').modal('hide');
+                    }
+                },
+                
+                removeOption(index) {
+                    this.productOptions.splice(index, 1);
+                },
+                
+                removeField(index) {
+                    this.productFields.splice(index, 1);
+                },
+                
+                handleOptionImage(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.currentOption.imageUrl = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                handleSubmit(event) {
+                    const formData = new FormData(event.target);
+                    formData.append('productOptions', JSON.stringify(this.productOptions));
+                    formData.append('productFields', JSON.stringify(this.productFields));
+
+                    fetch('/merchant/products/create', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/merchant/products';
+                        } else {
+                            alert(data.message || 'Error creating product');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error creating product');
+                    });
+                }
+            }
+        }
+
+        // Handle file input change for product images
+        function handleFileInput(event) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
             
-            <div class="product-options-list" x-show="productOptions.length > 0">
-                <template x-for="(option, index) in productOptions" :key="index">
-                    <div class="option-item card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="card-title" x-text="option.optionName"></h5>
-                                    <p class="card-text">
-                                        Price: <span x-text="selectedCurrency + ' ' + option.price"></span>
-                                    </p>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-danger" 
-                                        @click="productOptions.splice(index, 1)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <img x-show="option.imageUrl" :src="option.imageUrl" 
-                                 class="option-image mt-2" alt="Option image">
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </div>
+            Array.from(event.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-image';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button type="button" class="remove-image" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    preview.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
 
-        <div class="form-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="form-section-title mb-0">Custom Fields</h3>
-                <button type="button" class="btn btn-outline-primary" @click="showFieldModal = true">
-                    <i class="fas fa-plus"></i> Add Field
-                </button>
-            </div>
-            
-            <div class="product-fields-list" x-show="productFields.length > 0">
-                <template x-for="(field, index) in productFields" :key="index">
-                    <div class="field-item card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="card-title" x-text="field.fieldLabel"></h5>
-                                    <p class="card-text">Type: <span x-text="field.fieldType"></span></p>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-danger" 
-                                        @click="productFields.splice(index, 1)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h3 class="form-section-title">Product Images</h3>
-            <div class="form-group">
-                <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="files" name="files" 
-                           multiple accept="image/*" required>
-                    <label class="custom-file-label" for="files">Choose files</label>
-                </div>
-                <div id="imagePreview" class="image-preview-container"></div>
-            </div>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Create Product</button>
-            <a href="/merchant/products" class="btn btn-outline-secondary ml-2">Cancel</a>
-        </div>
-    </form>
-
-    <%- include('./_product_option_modal') %>
-    <%- include('./_product_field_modal') %>
-</div>
-
-<script src="/js/merchant/create-product.js"></script>
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('files');
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileInput);
+            }
+        });
+    </script>
+</body>
+</html>
