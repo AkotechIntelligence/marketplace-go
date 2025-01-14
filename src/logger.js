@@ -1,28 +1,44 @@
 const winston = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
+const path = require('path');
+
+// Custom format for better logging
+const customFormat = winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json(),
+    winston.format.printf(({ timestamp, level, message, ...meta }) => {
+        return JSON.stringify({
+            timestamp,
+            level,
+            message,
+            ...meta
+        });
+    })
+);
+
 const logger = winston.createLogger({
     level: 'info',
+    format: customFormat,
     transports: [
         new winston.transports.Console({
-            colorize: true,
-            'timestamp':true
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.simple()
+            )
         }),
         new DailyRotateFile({
-            name:"file",
-            filename: 'log-%DATE%.log',
-            dirname: __dirname + "/" + "logs",
-            datePattern: 'yyyy-MM-DD',
-            maxSize:'50m'
+            filename: path.join(__dirname, 'logs', 'log-%DATE%.log'),
+            datePattern: 'YYYY-MM-DD',
+            maxSize: '50m',
+            level: 'info'
         }),
         new DailyRotateFile({
-            name:"file",
-            level: 'error',
-            filename: 'errlog-%DATE%.log',
-            dirname: __dirname + "/" + "logs",
-            datePattern: 'yyyy-MM-DD',
-            maxSize:'50m'
+            filename: path.join(__dirname, 'logs', 'errlog-%DATE%.log'),
+            datePattern: 'YYYY-MM-DD',
+            maxSize: '50m',
+            level: 'error'
         })
     ]
 });
 
-module.exports= logger;
+module.exports = logger;
