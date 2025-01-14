@@ -3,6 +3,8 @@ const MerchantShopData = require("./merchantshop");
 const MarketShopCategoryData = require("./categories");
 const MerchantData = require("./merchant");
 const CurrencyData = require("./currencies");
+const ProductCategoryData = require("./product-categories");
+const ProductSubcategoryData = require("./product-subcategories");
 const db = require("../../models");
 const logger = require("../../logger");
 
@@ -27,6 +29,43 @@ async function populateMerchantShopCategory() {
     if (existingCategories.length > 0) return;
     logger.info("Populating merchant shop categories...");
     await db.MerchantShopCategory.bulkCreate(MarketShopCategoryData);
+}
+
+async function populateProductCategories() {
+    const existingCategories = await db.ProductCategory.findAll();
+    if (existingCategories.length > 0) return;
+    
+    // Get first zone and merchant shop category for reference
+    const zone = await db.MarketZone.findOne();
+    const merchantShopCategory = await db.MerchantShopCategory.findOne();
+    
+    // Set references
+    ProductCategoryData.forEach(category => {
+        category.zoneUuid = zone.zoneUuid;
+        category.merchantShopCategoryUuid = merchantShopCategory.uuid;
+    });
+    
+    logger.info("Populating product categories...");
+    await db.ProductCategory.bulkCreate(ProductCategoryData);
+    return ProductCategoryData;
+}
+
+async function populateProductSubcategories() {
+    const existingSubcategories = await db.ProductSubcategory.findAll();
+    if (existingSubcategories.length > 0) return;
+    
+    // Get product categories
+    const categories = await db.ProductCategory.findAll();
+    
+    // Map subcategories to categories
+    let index = 0;
+    ProductSubcategoryData.forEach(subcategory => {
+        subcategory.productCategoryUuid = categories[Math.floor(index/2)].uuid;
+        index++;
+    });
+    
+    logger.info("Populating product subcategories...");
+    await db.ProductSubcategory.bulkCreate(ProductSubcategoryData);
 }
 
 async function populateCurrencies() {
@@ -66,6 +105,8 @@ async function seedData() {
         await populateMerchantShopCategory();
         await populateCurrencies();
         await populateMerchantShop();
+        await populateProductCategories();
+        await populateProductSubcategories();
         logger.info("Data seeding completed successfully");
     } catch (error) {
         logger.error("Error seeding data:", error);

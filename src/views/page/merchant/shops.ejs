@@ -1,3 +1,7 @@
+<%- include('../../layout/_partials/_head.ejs') %>
+
+<link rel="stylesheet" href="/css/merchant/shops.css">
+
 <div class="account-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
@@ -10,11 +14,12 @@
     </div>
 </div>
 
+<!-- Flash messages -->
 <% if (messages.error) { %>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <%= messages.error %>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
         </button>
     </div>
 <% } %>
@@ -22,8 +27,8 @@
 <% if (messages.success) { %>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <%= messages.success %>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
         </button>
     </div>
 <% } %>
@@ -89,131 +94,5 @@
     <% }); %>
 </div>
 
-<style>
-.shop-card {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
 
-.shop-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.shop-card-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.shop-image {
-    width: 80px;
-    height: 80px;
-    margin-right: 1rem;
-    border-radius: 12px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.shop-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.shop-info {
-    flex-grow: 1;
-}
-
-.shop-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    color: #2c3e50;
-}
-
-.shop-category {
-    display: block;
-    font-size: 0.875rem;
-    color: #666;
-    margin-bottom: 0.25rem;
-}
-
-.shop-zone {
-    display: block;
-    font-size: 0.875rem;
-    color: #666;
-}
-
-.shop-zone i {
-    color: var(--primary);
-    margin-right: 0.25rem;
-}
-
-.shop-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    padding: 1rem 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    margin-bottom: 1rem;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
-}
-
-.stat-item i {
-    font-size: 1.5rem;
-    margin-right: 0.75rem;
-    color: var(--primary);
-}
-
-.stat-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.stat-value {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 1.1rem;
-}
-
-.stat-label {
-    font-size: 0.75rem;
-    color: #666;
-}
-
-.shop-description {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-}
-
-.shop-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.shop-actions .btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-}
-
-.shop-actions .btn i {
-    font-size: 0.875rem;
-}
-</style>
+<script src="/js/merchant/shops.js"></script>

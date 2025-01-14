@@ -1,0 +1,37 @@
+<!-- Product Options Modal -->
+<div class="modal fade" x-show="showOptionModal" x-cloak
+     tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionModalLabel">Add Product Option</h5>
+                <button type="button" class="close" @click="showOptionModal = false">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Option Name</label>
+                    <input type="text" class="form-control" x-model="currentOption.optionName">
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" x-text="selectedCurrency"></span>
+                        </div>
+                        <input type="number" class="form-control" x-model="currentOption.price" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Image (Optional)</label>
+                    <input type="file" class="form-control" @change="handleOptionImage($event)" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="showOptionModal = false">Close</button>
+                <button type="button" class="btn btn-primary" @click="addProductOption()">Add Option</button>
+            </div>
+        </div>
+    </div>
+</div>

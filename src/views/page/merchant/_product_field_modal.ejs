@@ -1,0 +1,34 @@
+<!-- Product Fields Modal -->
+<div class="modal fade" x-show="showFieldModal" x-cloak
+     tabindex="-1" role="dialog" aria-labelledby="fieldModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fieldModalLabel">Add Product Field</h5>
+                <button type="button" class="close" @click="showFieldModal = false">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Field Label</label>
+                    <input type="text" class="form-control" x-model="currentField.fieldLabel">
+                </div>
+                <div class="form-group">
+                    <label>Field Type</label>
+                    <select class="form-control" x-model="currentField.fieldType">
+                        <option value="">Select Type</option>
+                        <option value="TextInput">Text Input</option>
+                        <option value="SingleSelect">Single Select</option>
+                        <option value="MultiSelect">Multi Select</option>
+                        <option value="Number">Number</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="showFieldModal = false">Close</button>
+                <button type="button" class="btn btn-primary" @click="addProductField()">Add Field</button>
+            </div>
+        </div>
+    </div>
+</div>
