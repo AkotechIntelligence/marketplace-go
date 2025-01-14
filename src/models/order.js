@@ -45,8 +45,12 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         status: {
-            type: DataTypes.ENUM('pending', 'processing', 'completed', 'cancelled'),
-            defaultValue: 'pending'
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: 'PENDING',
+            validate: {
+                isIn: [['PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED']]
+            }
         },
         total: {
             type: DataTypes.DECIMAL(10, 2),
@@ -57,8 +61,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         paymentStatus: {
-            type: DataTypes.ENUM('pending', 'paid', 'failed'),
-            defaultValue: 'pending'
+            type: DataTypes.STRING,
+            defaultValue: 'PENDING',
+            validate: {
+                isIn: [['PENDING', 'PAID', 'FAILED']]
+            }
         },
         paymentMethod: {
             type: DataTypes.STRING

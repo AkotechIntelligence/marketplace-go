@@ -6,7 +6,6 @@ const MarketShopCategory = [
 	{
 		uuid: uuidv4(),
 		zoneUuid: MarketZones[1].zoneUuid,
-
 		name: "Merchant",
 		description: "",
 	},

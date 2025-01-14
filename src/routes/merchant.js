@@ -29,7 +29,7 @@ router.delete("/shops/:shopUuid", MerchantShopController.deleteShop);
 
 // Product Routes
 router.get("/products", ProductController.getProducts);
-router.get("/products/:shopUuid", ProductController.getProducts);
+router.get("/shop/products/:shopUuid", ProductController.getProducts);
 router.get("/product/create", ProductController.renderCreateProduct);
 router.get("/product/create/:shopUuid", ProductController.renderCreateProduct);
 router.post("/product/create",
@@ -45,9 +45,9 @@ router.delete("/product/:productUuid", ProductController.deleteProduct);
 
 // Order Routes
 router.get("/orders", OrderController.getMerchantOrders);
-router.get("/orders/:shopUuid", OrderController.getMerchantOrders);
+router.get("/shop/orders/:shopUuid", OrderController.getMerchantOrders);
 router.get("/order/:orderId", OrderController.getOrderDetails);
-router.put("/order/:orderId/status", OrderController.updateOrderStatus);
+router.put("/order/status/:orderId", OrderController.updateOrderStatus);
 
 // API Routes
 router.delete("/api/shops/:shopUuid/image", MerchantShopController.deleteShopImage);

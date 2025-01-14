@@ -1,175 +1,185 @@
+<%- include('../../layout/_partials/_head.ejs') %>
+
+<link rel="stylesheet" href="/css/merchant/create-product.css">
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 <div class="account-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="account-title">Create Product</h1>
-            <p class="account-subtitle">Add a new product to your shop</p>
+            <h1 class="account-title">Create Product or Service</h1>
+            <p class="account-subtitle">Add a new product or service to your shop</p>
         </div>
     </div>
 </div>
 
-<div class="account-card">
+<div class="account-card product-form-container" x-data="{ 
+    productOptions: [],
+    productFields: [],
+    showOptionModal: false,
+    showFieldModal: false,
+    currentOption: { optionName: '', price: '', imageUrl: null },
+    currentField: { fieldName: '', fieldType: '', fieldLabel: '' },
+    selectedCurrency: 'GHS'
+}">
     <form id="createProductForm" onsubmit="handleSubmit(event)">
-        <div class="form-group">
-            <label for="merchantShopUuid">Shop</label>
-            <select class="form-control" id="merchantShopUuid" name="merchantShopUuid" required>
-                <option value="">Select a shop</option>
-                <% shops.forEach(shop => { %>
-                    <option value="<%= shop.uuid %>" data-zone="<%= shop.zoneUuid %>">
-                        <%= shop.shopName %>
-                    </option>
-                <% }); %>
-            </select>
-        </div>
+        <div class="form-section">
+            <h3 class="form-section-title">Basic Information</h3>
+            
+            <div class="form-group">
+                <label for="merchantShopUuid">Shop *</label>
+                <select class="form-control" id="merchantShopUuid" name="merchantShopUuid" required>
+                    <option value="">Select a shop</option>
+                    <% shops.forEach(shop => { %>
+                        <option value="<%= shop.uuid %>" 
+                                <%= shopUuid && shop.uuid === shopUuid ? 'selected' : '' %>
+                                data-zone="<%= shop.zoneUuid %>">
+                            <%= shop.shopName %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="name">Product Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
-        </div>
+            <div class="form-group">
+                <label for="name">Product Name *</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
 
-        <div class="form-group">
-            <label for="description">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-        </div>
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="price">Price</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">$</span>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="price">Price *</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <select class="form-control currency-select" name="currencyCode" x-model="selectedCurrency">
+                                    <option value="GHS">GHS</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                </select>
+                            </div>
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" required>
                         </div>
-                        <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="quantity">Quantity *</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" required>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="quantity">Quantity</label>
-                    <input type="number" class="form-control" id="quantity" name="quantity" required>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">Categories</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="categoryUuid">Category *</label>
+                        <select class="form-control" id="categoryUuid" name="categoryUuid" required>
+                            <option value="">Select a category</option>
+                            <% categories.forEach(category => { %>
+                                <option value="<%= category.uuid %>"><%= category.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="subCategoryUuid">Sub Category *</label>
+                        <select class="form-control" id="subCategoryUuid" name="subCategoryUuid" required disabled>
+                            <option value="">Select a category first</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="categoryUuid">Category</label>
-                    <select class="form-control" id="categoryUuid" name="categoryUuid" required>
-                        <option value="">Select a category</option>
-                        <% categories.forEach(category => { %>
-                            <option value="<%= category.uuid %>"><%= category.name %></option>
-                        <% }); %>
-                    </select>
-                </div>
+        <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="form-section-title mb-0">Product Options</h3>
+                <button type="button" class="btn btn-outline-primary" @click="showOptionModal = true">
+                    <i class="fas fa-plus"></i> Add Option
+                </button>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="subCategoryUuid">Sub Category</label>
-                    <select class="form-control" id="subCategoryUuid" name="subCategoryUuid" required disabled>
-                        <option value="">Select a category first</option>
-                    </select>
-                </div>
+            
+            <div class="product-options-list" x-show="productOptions.length > 0">
+                <template x-for="(option, index) in productOptions" :key="index">
+                    <div class="option-item card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title" x-text="option.optionName"></h5>
+                                    <p class="card-text">
+                                        Price: <span x-text="selectedCurrency + ' ' + option.price"></span>
+                                    </p>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        @click="productOptions.splice(index, 1)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <img x-show="option.imageUrl" :src="option.imageUrl" 
+                                 class="option-image mt-2" alt="Option image">
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Product Images</label>
-            <div class="custom-file">
-                <input type="file" class="custom-file-input" id="files" name="files" multiple accept="image/*" required>
-                <label class="custom-file-label" for="files">Choose files</label>
+        <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="form-section-title mb-0">Custom Fields</h3>
+                <button type="button" class="btn btn-outline-primary" @click="showFieldModal = true">
+                    <i class="fas fa-plus"></i> Add Field
+                </button>
             </div>
-            <div id="imagePreview" class="mt-3 d-flex flex-wrap"></div>
+            
+            <div class="product-fields-list" x-show="productFields.length > 0">
+                <template x-for="(field, index) in productFields" :key="index">
+                    <div class="field-item card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title" x-text="field.fieldLabel"></h5>
+                                    <p class="card-text">Type: <span x-text="field.fieldType"></span></p>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        @click="productFields.splice(index, 1)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
         </div>
 
-        <div class="form-group mt-4">
+        <div class="form-section">
+            <h3 class="form-section-title">Product Images</h3>
+            <div class="form-group">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="files" name="files" 
+                           multiple accept="image/*" required>
+                    <label class="custom-file-label" for="files">Choose files</label>
+                </div>
+                <div id="imagePreview" class="image-preview-container"></div>
+            </div>
+        </div>
+
+        <div class="form-actions">
             <button type="submit" class="btn btn-primary">Create Product</button>
             <a href="/merchant/products" class="btn btn-outline-secondary ml-2">Cancel</a>
         </div>
     </form>
+
+    <%- include('./_product_option_modal') %>
+    <%- include('./_product_field_modal') %>
 </div>
 
-<script>
-// Handle file input change
-document.getElementById('files').addEventListener('change', function(e) {
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-    
-    Array.from(e.target.files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const div = document.createElement('div');
-            div.className = 'm-2';
-            div.innerHTML = `
-                <img src="${event.target.result}" 
-                     style="width: 100px; height: 100px; object-fit: cover;" 
-                     class="rounded">
-            `;
-            preview.appendChild(div);
-        }
-        reader.readAsDataURL(file);
-    });
-
-    // Update file input label
-    const fileCount = e.target.files.length;
-    const label = this.nextElementSibling;
-    label.textContent = fileCount > 1 ? `${fileCount} files selected` : e.target.files[0].name;
-});
-
-// Handle category change
-document.getElementById('categoryUuid').addEventListener('change', async function(e) {
-    const categoryId = e.target.value;
-    const subCategorySelect = document.getElementById('subCategoryUuid');
-    
-    if (!categoryId) {
-        subCategorySelect.disabled = true;
-        subCategorySelect.innerHTML = '<option value="">Select a category first</option>';
-        return;
-    }
-
-    try {
-        const response = await fetch(`/api/productsubcategory/product/${categoryId}`);
-        const data = await response.json();
-        
-        subCategorySelect.innerHTML = '<option value="">Select a sub category</option>';
-        data.data.forEach(subCat => {
-            subCategorySelect.innerHTML += `
-                <option value="${subCat.uuid}">${subCat.name}</option>
-            `;
-        });
-        subCategorySelect.disabled = false;
-    } catch (error) {
-        console.error('Error fetching subcategories:', error);
-        alert('Error loading subcategories');
-    }
-});
-
-// Handle form submission
-async function handleSubmit(event) {
-    event.preventDefault();
-    
-    const formData = new FormData(event.target);
-    const files = document.getElementById('files').files;
-    Array.from(files).forEach(file => {
-        formData.append('files', file);
-    });
-
-    try {
-        const response = await fetch('/merchant/products/create', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            window.location.href = '/merchant/products';
-        } else {
-            alert(data.message || 'Error creating product');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error creating product');
-    }
-}
-</script>
+<script src="/js/merchant/create-product.js"></script>
