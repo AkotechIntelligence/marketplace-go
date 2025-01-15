@@ -1,13 +1,13 @@
 <div class="product-card">
     <div class="product-image">
-        <% if (product.ProductImages && product.ProductImages.length > 0) { %>
-            <img src="/uploads/<%= product.ProductImages[0].imageUrl %>" 
+        <% if (product.images && product.images.length > 0) { %>
+            <img src="/uploads/products/<%= product.images[0].imageUrl %>" 
                  alt="<%= product.name %>" 
                  class="product-img">
         <% } else { %>
             <img src="/images/product-placeholder.png" 
                  alt="<%= product.name %>" 
-                 class="product-img">
+                 class="product-img placeholder-img">
         <% } %>
         <div class="product-badges">
             <% if (product.quantity <= 0) { %>
@@ -23,7 +23,9 @@
             <i class="fas fa-store"></i> <%= product.MerchantShop.shopName %>
         </p>
         <div class="product-info">
-            <div class="product-price">$<%= product.price.toFixed(2) %></div>
+            <div class="product-price">
+                <%= product.currencyCode %> <%= typeof product.price === 'number' ? product.price.toFixed(2) : product.price %>
+            </div>
             <div class="product-stock">
                 <i class="fas fa-box"></i> <%= product.quantity %> in stock
             </div>
@@ -31,7 +33,7 @@
         <div class="product-category">
             <span class="category-badge">
                 <i class="fas fa-tag"></i> 
-                <%= product.ProductCategory ? product.ProductCategory.name : 'Uncategorized' %>
+                <%= product.category ? product.category.name : 'Uncategorized' %>
             </span>
         </div>
         <div class="product-actions">
@@ -40,7 +42,7 @@
                 <i class="fas fa-edit"></i> Edit
             </a>
             <button type="button" 
-                    class="btn btn-sm btn-outline-danger"
+                    class="btn btn-sm btn-danger"
                     onclick="deleteProduct('<%= product.uuid %>')">
                 <i class="fas fa-trash"></i> Delete
             </button>
@@ -67,7 +69,7 @@
 
 .product-image {
     position: relative;
-    padding-top: 75%;
+    padding-top: 50%;
     overflow: hidden;
 }
 
@@ -80,6 +82,10 @@
     object-fit: cover;
 }
 
+.placeholder-img {
+    opacity: 0.5;
+}
+
 .product-badges {
     position: absolute;
     top: 10px;
@@ -87,6 +93,11 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+}
+
+.badge {
+    padding: 0.5rem;
+    border-radius: 5px;
 }
 
 .product-details {
@@ -97,7 +108,7 @@
 }
 
 .product-name {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
     color: #2c3e50;

@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
         },
         fieldValue: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true,
+					  defaultValue: ""
         },
        fieldType: {
             type: DataTypes.STRING,

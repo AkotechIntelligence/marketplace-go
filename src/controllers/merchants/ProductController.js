@@ -1,23 +1,25 @@
 const db = require("../../models");
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../../logger");
+const fs = require('fs');
+const path = require('path');
 
 const ProductController = {
     async getProducts(req, res) {
         try {
             const merchantId = req.user.uuid;
             const { shopUuid } = req.params;
-            
+
             logger.info('Fetching products', { merchantId, shopUuid });
-            
+
             let where = {};
             let shop = null;
 
             if (shopUuid) {
-                shop = await db.MerchantShop.findOne({ 
-                    where: { 
+                shop = await db.MerchantShop.findOne({
+                    where: {
                         uuid: shopUuid,
-                        merchantUuid: merchantId 
+                        merchantUuid: merchantId
                     }
                 });
 
@@ -60,9 +62,9 @@ const ProductController = {
                 order: [['createdAt', 'DESC']]
             });
 
-            logger.info('Products fetched successfully', { 
-                merchantId, 
-                productCount: products.length 
+            logger.info('Products fetched successfully', {
+                merchantId,
+                productCount: products.length
             });
 
             res.render("page/merchant/products", {
@@ -93,7 +95,7 @@ const ProductController = {
             const categories = await db.ProductCategory.findAll();
 
             res.render("page/merchant/create-product", {
-                title: "Create Product",
+                title: "Create Product111",
                 layout: "layout/merchant-account",
                 shops,
                 categories,
@@ -111,12 +113,13 @@ const ProductController = {
         try {
             logger.info('Starting product creation', {
                 merchantId: req.user.uuid,
-                shopId: req.body.merchantShopUuid
+                shopId: req.body.merchantShopUuid,
+                receivedData: req.body
             });
 
             // Validate shop ownership
             const shop = await db.MerchantShop.findOne({
-                where: { 
+                where: {
                     uuid: req.body.merchantShopUuid,
                     merchantUuid: req.user.uuid
                 }
@@ -133,9 +136,10 @@ const ProductController = {
                 });
             }
 
-            // Create product
+            // Generate UUID and create product
+            const productUuid = uuidv4(); // Assign UUID to a variable
             const product = await db.Product.create({
-                uuid: uuidv4(),
+                uuid: productUuid,
                 name: req.body.name,
                 description: req.body.description,
                 price: req.body.price,
@@ -143,23 +147,35 @@ const ProductController = {
                 merchantShopUuid: req.body.merchantShopUuid,
                 categoryUuid: req.body.categoryUuid,
                 subCategoryUuid: req.body.subCategoryUuid,
-                currencyCode: req.body.currencyCode || 'GHS'
+                currencyCode: req.body.currencyCode || 'GHS',
+                slug: `${req.body.name.toLowerCase().replace(/\s+/g, '-')}-${productUuid.slice(0, 8)}` // Generate slug
             });
 
             // Handle product options
             if (req.body.productOptions) {
                 const options = JSON.parse(req.body.productOptions);
-                await Promise.all(options.map(option => 
-                    db.ProductOption.create({
+                await Promise.all(options.map(async (option) => {
+                    let imageUrl = null;
+                    if (option.imageUrl) {
+                        // Extract base64 data
+                        const base64Data = option.imageUrl.split(',')[1];
+                        const fileName = `${uuidv4()}.png`; // Generate a unique filename
+                        const filePath = path.join('public/uploads/products', fileName);
+
+                        // Save the base64 image to the filesystem
+                        fs.writeFileSync(filePath, base64Data, { encoding: 'base64' });
+                        imageUrl = fileName; // Save the filename instead of base64
+                    }
+                    await db.ProductOption.create({
                         uuid: uuidv4(),
                         productUuid: product.uuid,
                         merchantUuid: req.user.uuid,
                         shopUuid: req.body.merchantShopUuid,
                         optionName: option.optionName,
                         price: option.price,
-                        imageUrl: option.imageUrl
-                    })
-                ));
+                        imageUrl: imageUrl // Save the filename
+                    });
+                }));
             }
 
             // Handle product fields
@@ -178,7 +194,7 @@ const ProductController = {
 
             // Handle product images
             if (req.files && req.files.length > 0) {
-                await Promise.all(req.files.map((file, index) => 
+                await Promise.all(req.files.map((file, index) =>
                     db.ProductImage.create({
                         uuid: uuidv4(),
                         productUuid: product.uuid,
@@ -190,6 +206,7 @@ const ProductController = {
 
             logger.info('Product created successfully', { productId: product.uuid });
 
+            // Return success response
             res.status(201).json({
                 success: true,
                 message: "Product created successfully",
@@ -203,9 +220,10 @@ const ProductController = {
                 merchantId: req.user?.uuid
             });
 
+            // Return error response
             res.status(500).json({
                 success: false,
-                message: "Failed to create product",
+                message: "Failed to create product "+error?.message,
                 error: error.message
             });
         }
@@ -293,7 +311,7 @@ const ProductController = {
 
             // Handle new images
             if (req.files && req.files.length > 0) {
-                await Promise.all(req.files.map(file => 
+                await Promise.all(req.files.map(file =>
                     db.ProductImage.create({
                         uuid: uuidv4(),
                         productUuid: product.uuid,
@@ -311,15 +329,22 @@ const ProductController = {
                     where: { productUuid: product.uuid }
                 });
                 // Create new options
-                await Promise.all(options.map(option => 
-                    db.ProductOption.create({
+                await Promise.all(options.map(async (option, index) => {
+                    let imageUrl = null;
+                    // Check if there are files for product option images
+                    if (req.body.optionImages && req.body.optionImages[index]) {
+                        imageUrl = req.body.optionImages[index]; // Assuming optionImages contains filenames
+                    }
+                    await db.ProductOption.create({
                         uuid: uuidv4(),
                         productUuid: product.uuid,
                         merchantUuid: merchantId,
                         shopUuid: product.merchantShopUuid,
-                        ...option
-                    })
-                ));
+                        optionName: option.optionName,
+                        price: option.price,
+                        imageUrl: imageUrl // Save the filename
+                    });
+                }));
             }
 
             // Update fields if provided

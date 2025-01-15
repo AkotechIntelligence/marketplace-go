@@ -144,3 +144,13 @@
 [x-cloak] {
     display: none !important;
 }
+
+/* Adjust button styles to prevent stretching */
+.option-item .btn, .field-item .btn {
+    width: 30px; /* Set a fixed width for the button */
+    height: 30px; /* Set a fixed height for the button */
+    padding: 0; /* Remove padding to prevent stretching */
+    display: flex; /* Ensure the button content is centered */
+    align-items: center; /* Center the icon vertically */
+    justify-content: center; /* Center the icon horizontally */
+}

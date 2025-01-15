@@ -2,6 +2,8 @@ const db = require("../models");
 const { ProductCategory, ProductSubcategory } = db;
 const { v4: uuidv4 } = require("uuid");
 const { z } = require("zod");
+
+
 const ProductCategoryController = {
 	async createProductCategory(req, res) {
 		try {
@@ -97,77 +99,37 @@ const ProductCategoryController = {
 		// res.render("page/home", { session: false });
 	},
 
-	async deleteProdutcById(req, res) {
-		const categoryParamSchema = z.object({
-			id: z.string().min(4),
-		});
-
-		const validateParams = categoryParamSchema.safeParse(req.params);
-
-		if (!validateParams.success) {
-			return res.status(400).json({
-				error: "Invalid data",
-				status: "failed",
-				message: validateParams.error.erros,
-			});
-		}
-
+	async getSubcategoriesByCategory(req, res) {
 		try {
-			// Check if category already exists by name
-			const existingProduct = await ProductCategory.findOne({
-				where: {
-					uuid: req.params.id,
-				},
+			const { productCategoryUuid } = req.params;
+
+			// Fetch subcategories associated with the given productCategoryUuid
+			const subcategories = await db.ProductSubcategory.findAll({
+				where: { productCategoryUuid },
+				attributes: ['uuid', 'name'] // Adjust attributes as needed
 			});
 
-			if (existingProduct && !existingProduct.dataValues) {
-				return res
-					.status(400)
-					.json({ error: "Category with id provided does not exist" });
-			}
-
-			const foundProduct = await Product.findOne({
-				where: {
-					categoryUuid: existingProduct.dataValues.uuid,
-				},
-			});
-
-			if (foundProduct) {
-				return res.status(400).json({
-					status: "failed",
-					message: "Permssion denied. Some Products rely on this category ",
+			if (subcategories.length === 0) {
+				return res.status(404).json({
+					message: "No subcategories found for this category",
+					status: "failed"
 				});
 			}
 
-			const foundProductSubCategory = await ProductSubcategory.findOne({
-				where: {
-					productCategoryUuid: existingProduct.dataValues.uuid,
-				},
-			});
-
-			if (foundProductSubCategory) {
-				return res.status(400).json({
-					status: "failed",
-					message:
-						"Permssion denied. Some Product sub category rely on this category ",
-				});
-			}
-
-			await existingProduct.destroy();
-
-			return res.status(200).json({
-				message: "Product Category deleted successfully",
-				status: "success",
-				data: existingProduct,
+			res.json({
+				message: "Subcategories fetched successfully",
+				data: subcategories,
+				status: "success"
 			});
 		} catch (error) {
-			console.log("error>>", error);
-			res.status(400).json({
+			console.error("Error fetching subcategories:", error);
+			res.status(500).json({
+				message: "Failed to fetch subcategories",
 				status: "error",
-				message: error.message,
+				error: error.message
 			});
 		}
-	},
+	}
 };
 
 module.exports = ProductCategoryController;

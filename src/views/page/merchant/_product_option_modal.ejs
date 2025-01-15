@@ -1,11 +1,9 @@
-<!-- Product Options Modal -->
-<div class="modal fade" x-show="showOptionModal" x-cloak
-     tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
+<div class="modal fade" id="optionModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="optionModalLabel">Add Product Option</h5>
-                <button type="button" class="close" @click="showOptionModal = false">
+                <h5 class="modal-title">Add Product Option</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -25,12 +23,12 @@
                 </div>
                 <div class="form-group">
                     <label>Image (Optional)</label>
-                    <input type="file" class="form-control" @change="handleOptionImage($event)" accept="image/*">
+                    <input type="file" class="form-control" @change="handleOptionImage" accept="image/*">
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="showOptionModal = false">Close</button>
-                <button type="button" class="btn btn-primary" @click="addProductOption()">Add Option</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" @click="addProductOption">Add Option</button>
             </div>
         </div>
     </div>

@@ -5,10 +5,7 @@ const path = require("path");
 const MarketZoneController = require("../controllers/MarketZoneController");
 const MerchantController = require("../controllers/merchants/MerchantController");
 const MerchantShopController = require("../controllers/merchants/MerchantShopController");
-const MerchantShopCategoryController = require("../controllers/MerchantShopCategoryController");
-const ProductController = require("../controllers/ProductController");
 const ProductCategoryController = require("../controllers/ProductCategoryController");
-const ProductSubCategoryController = require("../controllers/ProductSubCategoryController");
 const isAdmin = require("../middleware/admin");
 const uploadController = require("../controllers/UploadController");
 
@@ -30,12 +27,8 @@ router.put("/merchant/:id",
 router.delete("/merchant/deleteimage/:id", MerchantController.deleteMerchantImage);
 router.delete("/merchant/:id", isAdmin, MerchantController.deleteMerchantById);
 
-// Merchant Shop Routes
-router.post("/merchantshop/create",
-    ...uploadController.getUploader('shops', 'fileInputsImage'),
-    MerchantShopController.createShop
-);
 
-// ... rest of the routes remain unchanged
+// Fetch subcategories by productCategoryUuid
+router.get("/product/subcategories/:productCategoryUuid", ProductCategoryController.getSubcategoriesByCategory);
 
 module.exports = router;
