@@ -1,0 +1,42 @@
+<div class="order-details">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h6 class="font-weight-bold">Customer Details</h6>
+            <p class="mb-1"><%= order.User.fullName %></p>
+            <p class="mb-1"><%= order.User.email %></p>
+            <p class="mb-1"><%= order.shippingAddress %></p>
+        </div>
+        <div class="col-md-6 text-md-right">
+            <h6 class="font-weight-bold">Order Information</h6>
+            <p class="mb-1">Order ID: #<%= order.uuid %></p>
+            <p class="mb-1">Date: <%= new Date(order.createdAt).toLocaleString() %></p>
+            <p class="mb-1">Status: <%= order.status %></p>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% order.orderItems.forEach(item => { %>
+                <tr>
+                    <td><%= item.product.name %></td>
+                    <td><%= order.currencyCode %> <%= item.price.toFixed(2) %></td>
+                    <td><%= item.quantity %></td>
+                    <td><%= order.currencyCode %> <%= (item.price * item.quantity).toFixed(2) %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-right font-weight-bold">Total:</td>
+                <td><%= order.currencyCode %> <%= order.total.toFixed(2) %></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

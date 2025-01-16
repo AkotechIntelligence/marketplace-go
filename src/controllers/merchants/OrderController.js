@@ -43,6 +43,7 @@ const OrderController = {
                     },
                     {
                         model: db.User,
+                        as: 'user',
                         attributes: ['firstName', 'lastName', 'email', 'fullName']
                     }
                 ],
@@ -128,6 +129,7 @@ const OrderController = {
                     },
                     {
                         model: db.User,
+                        as: 'user',
                         attributes: ['firstName', 'lastName', 'email', 'fullName']
                     }
                 ]

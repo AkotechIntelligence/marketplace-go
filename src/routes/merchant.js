@@ -5,6 +5,7 @@ const MerchantController = require("../controllers/merchants/MerchantController"
 const MerchantShopController = require("../controllers/merchants/MerchantShopController");
 const ProductController = require("../controllers/merchants/ProductController");
 const OrderController = require("../controllers/merchants/OrderController");
+const SettingsController = require("../controllers/merchants/SettingsController");
 const uploadController = require("../controllers/UploadController");
 
 // Apply merchant authentication middleware to all routes
@@ -48,6 +49,10 @@ router.get("/orders", OrderController.getMerchantOrders);
 router.get("/shop/orders/:shopUuid", OrderController.getMerchantOrders);
 router.get("/order/:orderId", OrderController.getOrderDetails);
 router.put("/order/status/:orderId", OrderController.updateOrderStatus);
+
+// Settings Routes
+router.get("/settings", SettingsController.getSettings);
+router.post("/settings", SettingsController.updateSettings);
 
 // API Routes
 router.delete("/api/shops/:shopUuid/image", MerchantShopController.deleteShopImage);

@@ -24,79 +24,10 @@
     </div>
 </div>
 
+<%- include('./_order_filters') %>
+
 <div class="account-card">
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Items</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if (orders.length === 0) { %>
-                    <tr>
-                        <td colspan="7" class="text-center py-5">
-                            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-                            <h4>No Orders Found</h4>
-                            <p class="text-muted">Orders will appear here once customers make purchases</p>
-                        </td>
-                    </tr>
-                <% } else { %>
-                    <% orders.forEach(order => { %>
-                        <tr>
-                            <td>#<%= order.uuid %></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div>
-                                        <div class="font-weight-bold"><%= order.User.fullName %></div>
-                                        <small class="text-muted"><%= order.User.email %></small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <%= order.orderItems.length %> items<br>
-                                <small class="text-muted">
-                                    <%= order.orderItems.map(item => item.product.name).join(', ') %>
-                                </small>
-                            </td>
-                            <td>$<%= order.total.toFixed(2) %></td>
-                            <td>
-                                <span class="badge badge-<%= 
-                                    order.status === 'completed' ? 'success' : 
-                                    order.status === 'processing' ? 'warning' : 
-                                    'secondary' 
-                                %>">
-                                    <%= order.status %>
-                                </span>
-                            </td>
-                            <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
-                            <td>
-                                <div class="btn-group">
-                                    <button type="button" 
-                                            class="btn btn-sm btn-outline-primary"
-                                            onclick="viewOrderDetails('<%= order.uuid %>')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button type="button" 
-                                            class="btn btn-sm btn-outline-success"
-                                            onclick="updateOrderStatus('<%= order.uuid %>')"
-                                            <%= order.status === 'completed' ? 'disabled' : '' %>>
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    <% }); %>
-                <% } %>
-            </tbody>
-        </table>
-    </div>
+    <%- include('./_order_table', { orders }) %>
 </div>
 
 <!-- Order Details Modal -->
@@ -109,15 +40,112 @@
                     <span>&times;</span>
                 </button>
             </div>
-            <div class="modal-body" id="orderDetailsContent">
-                <!-- Content will be loaded dynamically -->
-            </div>
+            <div class="modal-body" id="orderDetailsContent"></div>
         </div>
     </div>
 </div>
 
 <script>
-async function viewOrderDetails(orderId) {
+$(document).ready(function() {
+    // Initialize DataTable
+    const ordersTable = $('#ordersTable').DataTable({
+        order: [[1, 'desc']], // Sort by date descending
+        pageLength: 25,
+        dom: 'Bfrtip',
+        buttons: ['csv', 'excel', 'pdf'],
+        responsive: true
+    });
+
+    // Handle date range selection
+    $('#dateRange').change(function() {
+        const value = $(this).val();
+        const customDateRange = $('.custom-date-range');
+        
+        if (value === 'custom') {
+            customDateRange.show();
+        } else {
+            customDateRange.hide();
+            applyDateFilter(value);
+        }
+    });
+
+    // Handle filter form submission
+    $('#orderFilterForm').submit(function(e) {
+        e.preventDefault();
+        applyFilters();
+    });
+
+    // View order details
+    $(document).on('click', '.view-order', function() {
+        const orderId = $(this).data('order-id');
+        loadOrderDetails(orderId);
+    });
+
+    // Update order status
+    $(document).on('click', '.update-status', function() {
+        const orderId = $(this).data('order-id');
+        updateOrderStatus(orderId);
+    });
+});
+
+function applyDateFilter(range) {
+    let startDate, endDate;
+    const today = new Date();
+    
+    switch(range) {
+        case 'today':
+            startDate = today;
+            endDate = today;
+            break;
+        case 'yesterday':
+            startDate = new Date(today.setDate(today.getDate() - 1));
+            endDate = new Date(today);
+            break;
+        case 'last7days':
+            startDate = new Date(today.setDate(today.getDate() - 7));
+            endDate = new Date();
+            break;
+        case 'last30days':
+            startDate = new Date(today.setDate(today.getDate() - 30));
+            endDate = new Date();
+            break;
+    }
+
+    if (startDate && endDate) {
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                const orderDate = new Date(data[1]);
+                return orderDate >= startDate && orderDate <= endDate;
+            }
+        );
+        $('#ordersTable').DataTable().draw();
+    }
+}
+
+function applyFilters() {
+    const dateRange = $('#dateRange').val();
+    const status = $('#orderStatus').val();
+    
+    let startDate, endDate;
+    
+    if (dateRange === 'custom') {
+        startDate = new Date($('#startDate').val());
+        endDate = new Date($('#endDate').val());
+    } else {
+        // Use predefined date range
+        applyDateFilter(dateRange);
+    }
+    
+    // Filter by status if selected
+    if (status) {
+        $('#ordersTable').DataTable()
+            .column(4)
+            .search(status)
+            .draw();
+    }
+}
+
+async function loadOrderDetails(orderId) {
     try {
         const response = await fetch(`/api/merchant/orders/${orderId}`);
         const data = await response.json();
@@ -153,54 +181,80 @@ async function viewOrderDetails(orderId) {
                             ${order.orderItems.map(item => `
                                 <tr>
                                     <td>${item.product.name}</td>
-                                    <td>$${item.price.toFixed(2)}</td>
+                                    <td>${order.currencyCode} ${item.price.toFixed(2)}</td>
                                     <td>${item.quantity}</td>
-                                    <td>$${(item.price * item.quantity).toFixed(2)}</td>
+                                    <td>${order.currencyCode} ${(item.price * item.quantity).toFixed(2)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="3" class="text-right font-weight-bold">Subtotal:</td>
-                                <td>$${order.total.toFixed(2)}</td>
+                                <td colspan="3" class="text-right font-weight-bold">Total:</td>
+                                <td>${order.currencyCode} ${order.total.toFixed(2)}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             `;
-            document.getElementById('orderDetailsContent').innerHTML = content;
+            $('#orderDetailsContent').html(content);
             $('#orderDetailsModal').modal('show');
         } else {
-            alert('Error loading order details');
+            throw new Error(data.message || 'Error loading order details');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error loading order details');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Error loading order details'
+        });
     }
 }
 
 async function updateOrderStatus(orderId) {
-    const newStatus = prompt('Enter new status (processing/completed):');
-    if (!newStatus) return;
-    
-    try {
-        const response = await fetch(`/api/merchant/orders/${orderId}/status`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: newStatus })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert(data.message || 'Error updating order status');
+    const { value: status } = await Swal.fire({
+        title: 'Update Order Status',
+        input: 'select',
+        inputOptions: {
+            'pending': 'Pending',
+            'processing': 'Processing',
+            'completed': 'Completed',
+            'cancelled': 'Cancelled'
+        },
+        inputPlaceholder: 'Select status',
+        showCancelButton: true
+    });
+
+    if (status) {
+        try {
+            const response = await fetch(`/api/merchant/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Updated',
+                    text: 'Order status has been updated successfully'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Error updating status');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Error updating status'
+            });
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error updating order status');
     }
 }
 </script>

@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
             Order.belongsTo(models.User, {
                 foreignKey: 'userUuid',
                 targetKey: 'uuid',
-                as: 'user'
+                as: 'user' // Add this alias
             });
             Order.belongsTo(models.Merchant, {
                 foreignKey: 'merchantUuid',
