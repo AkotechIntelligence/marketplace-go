@@ -240,11 +240,7 @@ const ProductController = {
                     {
                         model: db.ProductImage,
                         as: 'images'
-                    },
-                    {
-                        model: db.MerchantShop,
-                        where: { merchantUuid: merchantId }
-                    }
+                    } 
                 ]
             });
 

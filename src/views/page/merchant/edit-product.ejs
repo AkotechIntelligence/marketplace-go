@@ -113,6 +113,7 @@
                             name="subCategoryUuid" 
                             required>
                         <option value="">Select a category first</option>
+                        <!-- Populate subcategories based on selected category -->
                     </select>
                 </div>
             </div>
@@ -155,6 +156,32 @@
             <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-3"></div>
         </div>
 
+        <div class="form-group">
+            <label>Product Fields</label>
+            <div id="productFields">
+                <% product.ProductFields.forEach(field => { %>
+                    <div class="field-item">
+                        <span><%= field.fieldLabel %> - <%= field.fieldType %></span>
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editProductField('<%= field.uuid %>')">Edit</button>
+                    </div>
+                <% }); %>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="openFieldModal()">Add Field</button>
+        </div>
+
+        <div class="form-group">
+            <label>Product Options</label>
+            <div id="productOptions">
+                <% product.ProductOptions.forEach(option => { %>
+                    <div class="option-item">
+                        <span><%= option.optionName %> - $<%= option.price %></span>
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editProductOption('<%= option.uuid %>')">Edit</button>
+                    </div>
+                <% }); %>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="openOptionModal()">Add Option</button>
+        </div>
+
         <div class="form-group mt-4">
             <button type="submit" class="btn btn-primary">Update Product</button>
             <a href="/merchant/products" class="btn btn-outline-secondary ml-2">Cancel</a>
@@ -162,90 +189,9 @@
     </form>
 </div>
 
-<script>
-// Handle file input change
-document.getElementById('files').addEventListener('change', function(e) {
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-    
-    Array.from(e.target.files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const div = document.createElement('div');
-            div.className = 'product-image-item';
-            div.innerHTML = `
-                <img src="${event.target.result}" 
-                     style="width: 150px; height: 150px; object-fit: cover;" 
-                     class="img-thumbnail">
-            `;
-            preview.appendChild(div);
-        }
-        reader.readAsDataURL(file);
-    });
+<script src="/js/edit-product.js"></script>
 
-    // Update file input label
-    const fileCount = e.target.files.length;
-    const label = this.nextElementSibling;
-    label.textContent = fileCount > 1 ? `${fileCount} files selected` : e.target.files[0].name;
-});
 
-// Handle category change
-document.getElementById('categoryUuid').addEventListener('change', async function(e) {
-    const categoryId = e.target.value;
-    const subCategorySelect = document.getElementById('subCategoryUuid');
-    
-    if (!categoryId) {
-        subCategorySelect.disabled = true;
-        subCategorySelect.innerHTML = '<option value="">Select a category first</option>';
-        return;
-    }
-
-    try {
-        const response = await fetch(`/api/productsubcategory/product/${categoryId}`);
-        const data = await response.json();
-        
-        subCategorySelect.innerHTML = '<option value="">Select a sub category</option>';
-        data.data.forEach(subCat => {
-            const selected = subCat.uuid === '<%= product.subCategoryUuid %>' ? 'selected' : '';
-            subCategorySelect.innerHTML += `
-                <option value="${subCat.uuid}" ${selected}>${subCat.name}</option>
-            `;
-        });
-        subCategorySelect.disabled = false;
-    } catch (error) {
-        console.error('Error fetching subcategories:', error);
-        alert('Error loading subcategories');
-    }
-});
-
-// Load subcategories on page load
-window.addEventListener('load', function() {
-    const categorySelect = document.getElementById('categoryUuid');
-    if (categorySelect.value) {
-        categorySelect.dispatchEvent(new Event('change'));
-    }
-});
-
-async function deleteProductImage(imageId) {
-    if (confirm('Are you sure you want to remove this image?')) {
-        try {
-            const response = await fetch(`/api/merchant/products/images/${imageId}`, {
-                method: 'DELETE'
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert(data.message || 'Error removing image');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error removing image');
-        }
-    }
-}
-</script>
 
 <style>
 .product-image-item {
