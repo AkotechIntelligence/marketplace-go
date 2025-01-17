@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="/css/merchant/edit-product.css">
-
 <div x-data="productForm()">
+<div>
 <div class="account-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
@@ -181,43 +181,52 @@
         </div>
 
         <!-- Product Images Section -->
-        <div class="form-section">
-            <h3 class="form-section-title">Product Images</h3>
-            
-            <!-- Current Images -->
-            <div class="current-images mb-4">
-                <h6 class="mb-3">Current Images</h6>
-                <div class="d-flex flex-wrap gap-3">
-                    <% product.images.forEach(image => { %>
-                        <div class="product-image-item">
+       <!-- Product Images Section -->
+<div class="form-section">
+    <h3 class="form-section-title">Product Images</h3>
+    
+    <!-- Current Images -->
+    <div class="current-images mb-4">
+        <h6>Current Images</h6>
+        <div class="image-grid">
+            <% if (product.images && product.images.length > 0) { %>
+                <% product.images.forEach(image => { %>
+                    <div class="image-item">
+                        <div class="image-wrapper">
                             <img src="/uploads/products/<%= image.imageUrl %>" 
-                                 alt="Product image"
-                                 class="img-thumbnail">
-                            <button type="button" 
-                                    class="btn btn-sm btn-danger"
-                                    onclick="deleteProductImage('<%= image.uuid %>')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                                 alt="Product image">
+                            <div class="image-overlay">
+                                <button type="button" 
+                                        class="delete-image-btn"
+                                        onclick="deleteProductImage('<%= image.uuid %>')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
-                    <% }); %>
-                </div>
-            </div>
-
-            <!-- New Images Upload -->
-            <div class="form-group">
-                <label>Add New Images</label>
-                <div class="custom-file">
-                    <input type="file" 
-                           class="custom-file-input" 
-                           id="files" 
-                           name="files" 
-                           multiple 
-                           accept="image/*">
-                    <label class="custom-file-label" for="files">Choose files</label>
-                </div>
-                <div id="imagePreview" class="image-preview-container mt-3"></div>
-            </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p class="text-muted">No images uploaded yet</p>
+            <% } %>
         </div>
+    </div>
+
+    <!-- New Images Upload -->
+    <div class="form-group">
+        <label>Add New Images</label>
+        <div class="custom-file">
+            <input type="file" 
+                   class="custom-file-input" 
+                   id="files" 
+                   name="files" 
+                   multiple 
+                   accept="image/*">
+            <label class="custom-file-label" for="files">Choose files</label>
+        </div>
+        <div id="imagePreview" class="image-grid mt-3"></div>
+    </div>
+</div>
+
 
         <!-- Form Actions -->
         <div class="form-actions">
@@ -237,123 +246,6 @@
 <!-- Field Modal -->
 <%- include('./_product_field_modal') %>
 </div>
+</div>
 
-<script>
-// Initialize product data for Alpine.js
-document.addEventListener('alpine:init', () => {
-    Alpine.data('productForm', () => ({
-        productOptions: <%= JSON.stringify(product.ProductOptions || []) %>,
-        productFields: <%= JSON.stringify(product.ProductFields || []) %>,
-        selectedCurrency: '<%= product.currencyCode %>',
-        currentOption: { optionName: '', price: '', imageUrl: null },
-        currentField: { fieldLabel: '', fieldType: '' },
-
-        init() {
-            this.initializeSubcategories();
-            this.initializeImageUpload();
-        },
-
-        async initializeSubcategories() {
-            const categoryId = document.getElementById('categoryUuid').value;
-            if (categoryId) {
-                await this.loadSubcategories(categoryId);
-                document.getElementById('subCategoryUuid').value = '<%= product.subCategoryUuid %>';
-            }
-        },
-
-        async loadSubcategories(categoryId) {
-            try {
-                const response = await fetch(`/api/product/subcategories/${categoryId}`);
-                const data = await response.json();
-                
-                const subCategorySelect = document.getElementById('subCategoryUuid');
-                subCategorySelect.innerHTML = '<option value="">Select a subcategory</option>';
-                
-                data.data.forEach(subcategory => {
-                    const option = document.createElement('option');
-                    option.value = subcategory.uuid;
-                    option.textContent = subcategory.name;
-                    subCategorySelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading subcategories:', error);
-                showErrorAlert('Error', 'Failed to load subcategories');
-            }
-        },
-
-        initializeImageUpload() {
-            const fileInput = document.getElementById('files');
-            const preview = document.getElementById('imagePreview');
-            
-            fileInput.addEventListener('change', function(e) {
-                preview.innerHTML = '';
-                Array.from(e.target.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const div = document.createElement('div');
-                        div.className = 'preview-image';
-                        div.innerHTML = `
-                            <img src="${event.target.result}" alt="Preview">
-                            <button type="button" class="remove-image">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        `;
-                        preview.appendChild(div);
-                    }
-                    reader.readAsDataURL(file);
-                });
-            });
-        },
-
-        async handleSubmit(event) {
-            try {
-                const formData = new FormData(event.target);
-                formData.append('productOptions', JSON.stringify(this.productOptions));
-                formData.append('productFields', JSON.stringify(this.productFields));
-
-                const response = await fetch('/merchant/product/<%= product.uuid %>/edit', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showSuccessAlert('Success', 'Product updated successfully');
-                    setTimeout(() => window.location.href = '/merchant/products', 1500);
-                } else {
-                    throw new Error(data.message || 'Failed to update product');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showErrorAlert('Error', error.message || 'Failed to update product');
-            }
-        }
-    }));
-});
-
-// Function to delete product image
-async function deleteProductImage(imageId) {
-    try {
-        const response = await fetch(`/api/merchant/products/images/${imageId}`, {
-            method: 'DELETE'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            window.location.reload();
-        } else {
-            showErrorAlert('Error', data.message || 'Failed to delete image');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showErrorAlert('Error', 'Failed to delete image');
-    }
-}
-
-// Initialize category change handler
-document.getElementById('categoryUuid').addEventListener('change', async function() {
-    const form = document.querySelector('[x-data="productForm"]').__x.$data;
-    await form.loadSubcategories(this.value);
-});
-</script>
+<script src="/js/merchant/edit-product.js"></script>
