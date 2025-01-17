@@ -26,37 +26,7 @@ const productSubcategories = [
   },
   {
     uuid: uuidv4(),
-    name: "Women's Clothing",
-    productCategoryUuid: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  // Home & Garden subcategories
-  {
-    uuid: uuidv4(),
-    name: 'Furniture',
-    productCategoryUuid: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    uuid: uuidv4(),
-    name: 'Garden Tools',
-    productCategoryUuid: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  // Services subcategories
-  {
-    uuid: uuidv4(),
-    name: 'Cleaning',
-    productCategoryUuid: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    uuid: uuidv4(),
-    name: 'Repairs',
+    name: "Women's Clothing", 
     productCategoryUuid: null,
     createdAt: new Date(),
     updatedAt: new Date()

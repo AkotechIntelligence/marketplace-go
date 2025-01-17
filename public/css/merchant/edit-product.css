@@ -50,8 +50,41 @@
     border-bottom-right-radius: 0;
 }
 
-/* Image Preview */
-.image-preview-container {
+/* Current Images Section */
+.current-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.product-image-item {
+    position: relative;
+    width: 150px;
+}
+
+.product-image-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.product-image-item .btn-danger {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* New Image Preview */
+#imagePreview {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
@@ -70,27 +103,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.remove-image {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    border-radius: 50%;
-    width: 25px;
-    height: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.remove-image:hover {
-    background: #fff;
-    color: #dc3545;
 }
 
 /* Form Actions */

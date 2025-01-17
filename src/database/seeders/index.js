@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const Zones = require("./zones");
 const MerchantShopData = require("./merchantshop");
 const MarketShopCategoryData = require("./categories");
@@ -5,6 +7,7 @@ const MerchantData = require("./merchant");
 const CurrencyData = require("./currencies");
 const ProductCategoryData = require("./product-categories");
 const ProductSubcategoryData = require("./product-subcategories");
+const SampleMerchantData = require("./sample-merchant-data");
 const db = require("../../models");
 const logger = require("../../logger");
 
@@ -26,18 +29,23 @@ async function populateMerchant() {
 
 async function populateMerchantShopCategory() {
     const existingCategories = await db.MerchantShopCategory.findAll();
-    if (existingCategories.length > 0) return;
+    if (existingCategories.length > 0) return existingCategories;
     logger.info("Populating merchant shop categories...");
-    await db.MerchantShopCategory.bulkCreate(MarketShopCategoryData);
+    const categories = await db.MerchantShopCategory.bulkCreate(MarketShopCategoryData);
+    return categories;
 }
 
 async function populateProductCategories() {
     const existingCategories = await db.ProductCategory.findAll();
-    if (existingCategories.length > 0) return;
+    if (existingCategories.length > 0) return existingCategories;
     
     // Get first zone and merchant shop category for reference
     const zone = await db.MarketZone.findOne();
     const merchantShopCategory = await db.MerchantShopCategory.findOne();
+    
+    if (!zone || !merchantShopCategory) {
+        throw new Error("Zone and merchant shop category must exist before creating product categories");
+    }
     
     // Set references
     ProductCategoryData.forEach(category => {
@@ -46,26 +54,31 @@ async function populateProductCategories() {
     });
     
     logger.info("Populating product categories...");
-    await db.ProductCategory.bulkCreate(ProductCategoryData);
-    return ProductCategoryData;
+    const categories = await db.ProductCategory.bulkCreate(ProductCategoryData);
+    return categories;
 }
 
 async function populateProductSubcategories() {
     const existingSubcategories = await db.ProductSubcategory.findAll();
-    if (existingSubcategories.length > 0) return;
+    if (existingSubcategories.length > 0) return existingSubcategories;
     
     // Get product categories
     const categories = await db.ProductCategory.findAll();
+    if (categories.length < 2) {
+        throw new Error("Product categories must exist before creating subcategories");
+    }
     
     // Map subcategories to categories
-    let index = 0;
-    ProductSubcategoryData.forEach(subcategory => {
-        subcategory.productCategoryUuid = categories[Math.floor(index/2)].uuid;
-        index++;
-    });
+    const [electronicsCategory, fashionCategory] = categories;
+    
+    ProductSubcategoryData[0].productCategoryUuid = electronicsCategory.uuid; // Smartphones
+    ProductSubcategoryData[1].productCategoryUuid = electronicsCategory.uuid; // Laptops
+    ProductSubcategoryData[2].productCategoryUuid = fashionCategory.uuid; // Men's Clothing
+    ProductSubcategoryData[3].productCategoryUuid = fashionCategory.uuid; // Women's Clothing
     
     logger.info("Populating product subcategories...");
-    await db.ProductSubcategory.bulkCreate(ProductSubcategoryData);
+    const subcategories = await db.ProductSubcategory.bulkCreate(ProductSubcategoryData);
+    return subcategories;
 }
 
 async function populateCurrencies() {
@@ -107,6 +120,10 @@ async function seedData() {
         await populateMerchantShop();
         await populateProductCategories();
         await populateProductSubcategories();
+        
+        // Only seed sample data after all other data is seeded
+        await SampleMerchantData.seedSampleData();
+        
         logger.info("Data seeding completed successfully");
     } catch (error) {
         logger.error("Error seeding data:", error);

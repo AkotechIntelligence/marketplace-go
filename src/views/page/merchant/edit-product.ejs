@@ -1,206 +1,359 @@
+<link rel="stylesheet" href="/css/merchant/edit-product.css">
+
+<div x-data="productForm()">
 <div class="account-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
             <h1 class="account-title">Edit Product</h1>
-            <p class="account-subtitle">Update product details</p>
+            <p class="account-subtitle">Update your product details</p>
         </div>
     </div>
 </div>
 
-<% if (messages.error) { %>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <%= messages.error %>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-<% } %>
+<div class="account-card product-form-container">
+    <form id="editProductForm" @submit.prevent="handleSubmit">
+        <!-- Basic Information Section -->
+        <div class="form-section">
+            <h3 class="form-section-title">Basic Information</h3>
 
-<% if (messages.success) { %>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <%= messages.success %>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-<% } %>
+            <div class="form-group">
+                <label for="merchantShopUuid">Shop *</label>
+                <select class="form-control" id="merchantShopUuid" name="merchantShopUuid" required>
+                    <option value="">Select a shop</option>
+                    <% shops.forEach(shop => { %>
+                        <option value="<%= shop.uuid %>" 
+                                <%= shop.uuid === product.merchantShopUuid ? 'selected' : '' %>>
+                            <%= shop.shopName %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
 
-<div class="account-card">
-    <form action="/merchant/products/<%= product.uuid %>/edit" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="merchantShopUuid">Shop *</label>
-            <select class="form-control" id="merchantShopUuid" name="merchantShopUuid" required>
-                <option value="">Select a shop</option>
-                <% shops.forEach(shop => { %>
-                    <option value="<%= shop.uuid %>" 
-                            <%= shop.uuid === product.merchantShopUuid ? 'selected' : '' %>>
-                        <%= shop.shopName %>
-                    </option>
-                <% }); %>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="name">Product Name *</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="name" 
+                       name="name" 
+                       value="<%= product.name %>" 
+                       required>
+            </div>
 
-        <div class="form-group">
-            <label for="name">Product Name *</label>
-            <input type="text" 
-                   class="form-control" 
-                   id="name" 
-                   name="name" 
-                   value="<%= product.name %>"
-                   required>
-        </div>
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea class="form-control" 
+                          id="description" 
+                          name="description" 
+                          rows="3" 
+                          required><%= product.description %></textarea>
+            </div>
 
-        <div class="form-group">
-            <label for="description">Description *</label>
-            <textarea class="form-control" 
-                      id="description" 
-                      name="description" 
-                      rows="3" 
-                      required><%= product.description %></textarea>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="price">Price *</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">$</span>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="price">Price *</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <select class="form-control currency-select" 
+                                        name="currencyCode" 
+                                        x-model="selectedCurrency">
+                                    <option value="GHS" <%= product.currencyCode === 'GHS' ? 'selected' : '' %>>GHS</option>
+                                    <option value="USD" <%= product.currencyCode === 'USD' ? 'selected' : '' %>>USD</option>
+                                </select>
+                            </div>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="price" 
+                                   name="price" 
+                                   value="<%= product.price %>"
+                                   step="0.01" 
+                                   required>
                         </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="quantity">Quantity *</label>
                         <input type="number" 
                                class="form-control" 
-                               id="price" 
-                               name="price" 
-                               value="<%= product.price %>"
-                               step="0.01" 
+                               id="quantity" 
+                               name="quantity" 
+                               value="<%= product.quantity %>"
                                required>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="quantity">Quantity *</label>
-                    <input type="number" 
-                           class="form-control" 
-                           id="quantity" 
-                           name="quantity" 
-                           value="<%= product.quantity %>"
-                           required>
+        </div>
+
+        <!-- Product Category Section -->
+        <div class="form-section">
+            <h3 class="form-section-title">Product Category</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="categoryUuid">Category *</label>
+                        <select class="form-control" id="categoryUuid" name="categoryUuid" required>
+                            <option value="">Select a category</option>
+                            <% categories.forEach(category => { %>
+                                <option value="<%= category.uuid %>"
+                                        <%= category.uuid === product.categoryUuid ? 'selected' : '' %>>
+                                    <%= category.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="subCategoryUuid">Sub Category *</label>
+                        <select class="form-control" id="subCategoryUuid" name="subCategoryUuid" required>
+                            <option value="">Select a category first</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="categoryUuid">Category *</label>
-                    <select class="form-control" id="categoryUuid" name="categoryUuid" required>
-                        <option value="">Select a category</option>
-                        <% categories.forEach(category => { %>
-                            <option value="<%= category.uuid %>"
-                                    <%= category.uuid === product.categoryUuid ? 'selected' : '' %>>
-                                <%= category.name %>
-                            </option>
-                        <% }); %>
-                    </select>
-                </div>
+        <!-- Product Options Section -->
+        <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="form-section-title mb-0">Product Options</h3>
+                <button type="button" class="btn btn-outline-primary" @click="openOptionModal">
+                    <i class="fas fa-plus"></i> Add Option
+                </button>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="subCategoryUuid">Sub Category *</label>
-                    <select class="form-control" 
-                            id="subCategoryUuid" 
-                            name="subCategoryUuid" 
-                            required>
-                        <option value="">Select a category first</option>
-                        <!-- Populate subcategories based on selected category -->
-                    </select>
+
+            <template x-if="productOptions.length > 0">
+                <div class="product-options-list">
+                    <template x-for="(option, index) in productOptions" :key="index">
+                        <div class="option-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title" x-text="option.optionName"></h5>
+                                        <p class="card-text">
+                                            Price: <span x-text="`${selectedCurrency} ${option.price}`"></span>
+                                        </p>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            @click="removeOption(index)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <img x-show="option.imageUrl" :src="option.imageUrl"
+                                     class="option-image mt-2" alt="Option image">
+                            </div>
+                        </div>
+                    </template>
                 </div>
-            </div>
+            </template>
         </div>
 
-        <div class="form-group">
-            <label>Current Product Images</label>
-            <div class="current-images mb-3 d-flex flex-wrap gap-3">
-                <% if (product.ProductImages && product.ProductImages.length > 0) { %>
-                    <% product.ProductImages.forEach(image => { %>
+        <!-- Product Fields Section -->
+        <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="form-section-title mb-0">Custom Fields</h3>
+                <button type="button" class="btn btn-outline-primary" @click="openFieldModal">
+                    <i class="fas fa-plus"></i> Add Field
+                </button>
+            </div>
+
+            <template x-if="productFields.length > 0">
+                <div class="product-fields-list">
+                    <template x-for="(field, index) in productFields" :key="index">
+                        <div class="field-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title" x-text="field.fieldLabel"></h5>
+                                        <p class="card-text">Type: <span x-text="field.fieldType"></span></p>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            @click="removeField(index)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- Product Images Section -->
+        <div class="form-section">
+            <h3 class="form-section-title">Product Images</h3>
+            
+            <!-- Current Images -->
+            <div class="current-images mb-4">
+                <h6 class="mb-3">Current Images</h6>
+                <div class="d-flex flex-wrap gap-3">
+                    <% product.images.forEach(image => { %>
                         <div class="product-image-item">
-                            <img src="/uploads/<%= image.imageUrl %>" 
+                            <img src="/uploads/products/<%= image.imageUrl %>" 
                                  alt="Product image"
-                                 class="img-thumbnail"
-                                 style="width: 150px; height: 150px; object-fit: cover;">
+                                 class="img-thumbnail">
                             <button type="button" 
-                                    class="btn btn-sm btn-danger mt-2"
+                                    class="btn btn-sm btn-danger"
                                     onclick="deleteProductImage('<%= image.uuid %>')">
-                                Remove
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     <% }); %>
-                <% } else { %>
-                    <p class="text-muted">No images uploaded</p>
-                <% } %>
+                </div>
             </div>
-            
-            <label>Add New Images</label>
-            <div class="custom-file">
-                <input type="file" 
-                       class="custom-file-input" 
-                       id="files" 
-                       name="files" 
-                       multiple 
-                       accept="image/*">
-                <label class="custom-file-label" for="files">
-                    Choose files
-                </label>
+
+            <!-- New Images Upload -->
+            <div class="form-group">
+                <label>Add New Images</label>
+                <div class="custom-file">
+                    <input type="file" 
+                           class="custom-file-input" 
+                           id="files" 
+                           name="files" 
+                           multiple 
+                           accept="image/*">
+                    <label class="custom-file-label" for="files">Choose files</label>
+                </div>
+                <div id="imagePreview" class="image-preview-container mt-3"></div>
             </div>
-            <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-3"></div>
         </div>
 
-        <div class="form-group">
-            <label>Product Fields</label>
-            <div id="productFields">
-                <% product.ProductFields.forEach(field => { %>
-                    <div class="field-item">
-                        <span><%= field.fieldLabel %> - <%= field.fieldType %></span>
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editProductField('<%= field.uuid %>')">Edit</button>
-                    </div>
-                <% }); %>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="openFieldModal()">Add Field</button>
-        </div>
-
-        <div class="form-group">
-            <label>Product Options</label>
-            <div id="productOptions">
-                <% product.ProductOptions.forEach(option => { %>
-                    <div class="option-item">
-                        <span><%= option.optionName %> - $<%= option.price %></span>
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editProductOption('<%= option.uuid %>')">Edit</button>
-                    </div>
-                <% }); %>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="openOptionModal()">Add Option</button>
-        </div>
-
-        <div class="form-group mt-4">
-            <button type="submit" class="btn btn-primary">Update Product</button>
-            <a href="/merchant/products" class="btn btn-outline-secondary ml-2">Cancel</a>
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                Update Product
+            </button>
+            <a href="/merchant/products" class="btn btn-outline-secondary ml-2">
+                Cancel
+            </a>
         </div>
     </form>
 </div>
 
-<script src="/js/edit-product.js"></script>
+<!-- Option Modal -->
+<%- include('./_product_option_modal') %>
 
+<!-- Field Modal -->
+<%- include('./_product_field_modal') %>
+</div>
 
+<script>
+// Initialize product data for Alpine.js
+document.addEventListener('alpine:init', () => {
+    Alpine.data('productForm', () => ({
+        productOptions: <%= JSON.stringify(product.ProductOptions || []) %>,
+        productFields: <%= JSON.stringify(product.ProductFields || []) %>,
+        selectedCurrency: '<%= product.currencyCode %>',
+        currentOption: { optionName: '', price: '', imageUrl: null },
+        currentField: { fieldLabel: '', fieldType: '' },
 
-<style>
-.product-image-item {
-    position: relative;
-    margin-right: 1rem;
-    margin-bottom: 1rem;
+        init() {
+            this.initializeSubcategories();
+            this.initializeImageUpload();
+        },
+
+        async initializeSubcategories() {
+            const categoryId = document.getElementById('categoryUuid').value;
+            if (categoryId) {
+                await this.loadSubcategories(categoryId);
+                document.getElementById('subCategoryUuid').value = '<%= product.subCategoryUuid %>';
+            }
+        },
+
+        async loadSubcategories(categoryId) {
+            try {
+                const response = await fetch(`/api/product/subcategories/${categoryId}`);
+                const data = await response.json();
+                
+                const subCategorySelect = document.getElementById('subCategoryUuid');
+                subCategorySelect.innerHTML = '<option value="">Select a subcategory</option>';
+                
+                data.data.forEach(subcategory => {
+                    const option = document.createElement('option');
+                    option.value = subcategory.uuid;
+                    option.textContent = subcategory.name;
+                    subCategorySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading subcategories:', error);
+                showErrorAlert('Error', 'Failed to load subcategories');
+            }
+        },
+
+        initializeImageUpload() {
+            const fileInput = document.getElementById('files');
+            const preview = document.getElementById('imagePreview');
+            
+            fileInput.addEventListener('change', function(e) {
+                preview.innerHTML = '';
+                Array.from(e.target.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const div = document.createElement('div');
+                        div.className = 'preview-image';
+                        div.innerHTML = `
+                            <img src="${event.target.result}" alt="Preview">
+                            <button type="button" class="remove-image">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        preview.appendChild(div);
+                    }
+                    reader.readAsDataURL(file);
+                });
+            });
+        },
+
+        async handleSubmit(event) {
+            try {
+                const formData = new FormData(event.target);
+                formData.append('productOptions', JSON.stringify(this.productOptions));
+                formData.append('productFields', JSON.stringify(this.productFields));
+
+                const response = await fetch('/merchant/product/<%= product.uuid %>/edit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccessAlert('Success', 'Product updated successfully');
+                    setTimeout(() => window.location.href = '/merchant/products', 1500);
+                } else {
+                    throw new Error(data.message || 'Failed to update product');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorAlert('Error', error.message || 'Failed to update product');
+            }
+        }
+    }));
+});
+
+// Function to delete product image
+async function deleteProductImage(imageId) {
+    try {
+        const response = await fetch(`/api/merchant/products/images/${imageId}`, {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.reload();
+        } else {
+            showErrorAlert('Error', data.message || 'Failed to delete image');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showErrorAlert('Error', 'Failed to delete image');
+    }
 }
 
-.gap-3 {
-    gap: 1rem;
-}
-</style>
+// Initialize category change handler
+document.getElementById('categoryUuid').addEventListener('change', async function() {
+    const form = document.querySelector('[x-data="productForm"]').__x.$data;
+    await form.loadSubcategories(this.value);
+});
+</script>

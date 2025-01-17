@@ -7,12 +7,17 @@ module.exports = (sequelize, DataTypes) => {
             Order.belongsTo(models.User, {
                 foreignKey: 'userUuid',
                 targetKey: 'uuid',
-                as: 'user' // Add this alias
+                as: 'user'
             });
             Order.belongsTo(models.Merchant, {
                 foreignKey: 'merchantUuid',
                 targetKey: 'uuid',
                 as: 'merchant'
+            });
+            Order.belongsTo(models.MerchantShop, {
+                foreignKey: 'merchantShopUuid',
+                targetKey: 'uuid',
+                as: 'shop'
             });
             Order.hasMany(models.OrderItem, {
                 foreignKey: 'orderUuid',
@@ -41,6 +46,14 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             references: {
                 model: 'Merchant',
+                key: 'uuid'
+            }
+        },
+        merchantShopUuid: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            references: {
+                model: 'MerchantShop',
                 key: 'uuid'
             }
         },

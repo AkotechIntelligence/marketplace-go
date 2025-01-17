@@ -16,22 +16,6 @@ const productCategories = [
     merchantShopCategoryUuid: null,
     createdAt: new Date(),
     updatedAt: new Date()
-  },
-  {
-    uuid: uuidv4(),
-    name: 'Home & Garden',
-    zoneUuid: null,
-    merchantShopCategoryUuid: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    uuid: uuidv4(),
-    name: 'Services',
-    zoneUuid: null,
-    merchantShopCategoryUuid: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
   }
 ];
 
